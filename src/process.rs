@@ -14,7 +14,7 @@ pub struct Process {
     senders: Vec<mpsc::Sender<Message>>,
     current_round: Mutex<u64>,
     proposer_sequence: Vec<usize>,
-    
+
     // State
     proposals: Mutex<HashMap<u64, String>>,
     prevotes: Mutex<HashMap<u64, Vec<Option<String>>>>,
@@ -27,8 +27,8 @@ impl Process {
         receiver: mpsc::Receiver<Message>,
         senders: Vec<mpsc::Sender<Message>>,
         proposer_sequence: Vec<usize>,
-    ) -> Arc<Self> {
-        Arc::new(Process {
+    ) -> Self {
+        Process {
             id,
             receiver: Mutex::new(receiver),
             senders,
@@ -37,10 +37,10 @@ impl Process {
             proposals: Mutex::new(HashMap::new()),
             prevotes: Mutex::new(HashMap::new()),
             precommits: Mutex::new(HashMap::new()),
-        })
+        }
     }
 
-    pub async fn run(self: Arc<Self>) {
+    pub async fn run(&self) {
         loop {
             let round = {
                 let mut current_round = self.current_round.lock().await;
