@@ -6,22 +6,15 @@ pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
 
     /*
 
-            // Tendermint/CometBFT consensus WIP.
+        // Tendermint/CometBFT consensus WIP.
         // https://github.com/tendermint/tendermint/blob/main/spec/consensus/consensus.md#common-exit-conditions
         // https://docs.tendermint.com/v0.34/introduction/what-is-tendermint.html#
 
         /*
-        # The consensus engine runs a consensus algorithm called Tendermint.
         # Tendermint is a byzantine fault-tolerant consensus algorithm.
         # It consists of a validator set, where each validator is a node with a public key and some voting power.
-        # Transmuted into a blockchain, Tendermint is a proof-of-stake consensus protocol.
-        # Voting power corresponds to staked token balance.
-        #
-        # [1]: https://github.com/tendermint/tendermint/blob/v0.34.x/spec/consensus/consensus.md
-        class TendermintConsensusEngine:
-            def __init__(self, node):
-                self.node = node
 
+        
         # vset - the validator set
         # n - the number of validators
         # VP(i) - voting power of validator i

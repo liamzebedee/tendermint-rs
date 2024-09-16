@@ -7,6 +7,11 @@ Dependencies:
  * tokio - for async runtime.
  * secp256k1 - for cryptographic identities.
 
+## Conceptual overview.
+
+A consensus protocol consists of a set of processes, which communicate by sending messages to each other in order to agree on a value. Processes may crash, run at arbitrary speeds, and display byzantine failures. The challenge of consensus is building a protocol which can finalise and does so safely and consistently given these assumptions.
+
+Tendermint-rs is a barebones implementation of Tendermint consensus.
 
 ## Status.
 
