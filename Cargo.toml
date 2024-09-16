@@ -1,9 +1,15 @@
 [package]
-name = "tendermint-rs"
+name = "tendermint"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
 [dependencies]
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["full", "sync"] }
+
+secp256k1 = { version = "0.24.0", features = ["rand"] }
+rand = "0.8.5"
+sha3 = "0.10.0"
+tokio-stream = { version = "0.1", features = ["sync"] }

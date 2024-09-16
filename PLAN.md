@@ -2,10 +2,13 @@
 
 Features:
 
- - [ ] `run_round` runs a single round.
- - [ ] encapsulate round state, so we can pass it into `run_round` and repeat.
+ - [x] `run_round` runs a single round.
+ - [x] encapsulate round state, so we can pass it into `run_round` and repeat.
  - [ ] test `run_round` independently.
- - [ ] add loop which runs rounds.
+ - [x] add loop which runs rounds.
+ - [x] hooks/extensions/events api: 
+   - [x] get value
+   - [x] on new decision
  - [ ] fix consensus height + stuff. commit data to log on disk.
  - [ ] add pubkey identities for nodes. add signatures to node messages.
  - [ ] add gRPC for data types.

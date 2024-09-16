@@ -1,24 +1,9 @@
-
-
-
 // Define message types
 #[derive(Debug, Clone)]
 pub enum Message {
-    Propose {
-        round: u64,
-        value: String,
-        from: usize,
-    },
-    Prevote {
-        round: u64,
-        value: Option<String>,
-        from: usize,
-    },
-    Precommit {
-        round: u64,
-        value: Option<String>,
-        from: usize,
-    },
+    Propose { round: u64, value: String, from: usize },
+    Prevote { round: u64, value: Option<String>, from: usize },
+    Precommit { round: u64, value: Option<String>, from: usize },
 }
 
 pub enum MessageType {
