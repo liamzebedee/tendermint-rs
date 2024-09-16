@@ -5,6 +5,7 @@ use tokio::sync::mpsc;
 mod messages;
 mod params;
 mod process;
+mod algos;
 
 use crate::params::*;
 use crate::process::*;
@@ -42,9 +43,9 @@ async fn main() {
     // Run all nodes
     let handles: Vec<_> = nodes
         .into_iter()
-        .map(|node| {
+        .map(|mut node| {
             tokio::spawn(async move {
-                node.run().await;
+                node.run_epoch(None).await;
             })
         })
         .collect();
@@ -55,4 +56,8 @@ async fn main() {
     }
 
     println!("Consensus reached.");
+    // loop over all decisions from all nodes
+    // nodes.iter().for_each(|node| {
+    //     println!("Node {}: {:?}", node.id, node.decision);
+    // });
 }
