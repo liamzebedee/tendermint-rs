@@ -58,6 +58,7 @@ impl Process {
             .to_string()
     }
 
+    /// Runs 
     // pub async fn run(&self) {
     //     loop {
     //         epoch_state = self.run_round(epoch_state).await;
@@ -68,6 +69,9 @@ impl Process {
     //     epoch_state
     // }
 
+    /// Runs a single epoch of Tendermint consensus, taking in optionally the current epoch state.
+    /// Each epoch consists of at least one round. If the round fails to reach consensus, the epoch will continue to the next round.
+    /// This function returns upon the consensus deciding a new value.
     pub async fn run_epoch(&mut self, epoch_state: Option<EpochState>) -> EpochState {
         let mut epoch_state = epoch_state.unwrap_or(EpochState {
             height: 0,
@@ -89,7 +93,9 @@ impl Process {
         println!("Node {} decided on {:?}", self.id, self.decision);
         epoch_state
     }
-
+    
+    /// Runs a single round of Tendermint consensus, taking in the current epoch state.
+    /// Returns the updated epoch state.
     pub async fn run_round(&self, epoch_state0: EpochState) -> EpochState {
         let mut epoch = epoch_state0.clone();
         epoch.round += 1;
@@ -250,8 +256,8 @@ impl Process {
         }
 
         // wait 2s.
-        println!{"\n\n"};
-        tokio::time::sleep(Duration::from_secs(2)).await;
+        // println!{"\n\n"};
+        // tokio::time::sleep(Duration::from_secs(2)).await;
 
         epoch
     }
