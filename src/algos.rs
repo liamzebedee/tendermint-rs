@@ -3,7 +3,6 @@ use tokio::time::Duration;
 /// Gets the proposer for a round.
 pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
     proposer_sequence[(round - 1) as usize % proposer_sequence.len()]
-
     /*
 
         // Tendermint/CometBFT consensus WIP.

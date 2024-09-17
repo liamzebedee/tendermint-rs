@@ -13,10 +13,16 @@ Features:
  - [x] add pubkey identities for nodes. add signatures to node messages.
  - [ ] fix consensus height + stuff. commit data to log on disk.
  - [ ] implement dynamic timeouts to allow network to resolve with backoff.
- - [ ] change node to start up on a network interface and listen to messages.
+ - [x] change node to start up on a network interface and listen to messages.
  - [ ] add node sync so it restarts and gets history from other nodes for height before it.
  - [ ] check precommits/prevotes are unique.
 
+Demo network:
+
+ - [ ] startup node.
+ - [ ] connect to server listing all validators and their ip's.
+ - [ ] try listen for other nodes.
+
 Ideas:
- - [ ] 
+ - [ ] motomint - tendermint but the proposer set is dictated by POW. Basically 
 

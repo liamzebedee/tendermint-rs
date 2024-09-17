@@ -14,11 +14,12 @@ Dependencies:
 
 A consensus protocol consists of a set of processes, which communicate by sending messages to each other in order to agree on a value. Processes may crash, run at arbitrary speeds, and display byzantine failures. The challenge of consensus is building a protocol which can finalise and does so safely and consistently given these assumptions.
 
-Tendermint-rs is a barebones implementation of Tendermint consensus.
+The basic Tendermint algorithm is implemented as `Process`. Each `Process` communicates via abstract channels - there is an implementation using just local communication (`examples/standalone-channels`), and an implementation using RPC over HTTP servers (`examples/standalone-http`). Processes emit consensus events via tokio async streams - consumers can subscribe to the process and receive callbacks for new values agreed on by the network (called "decisions"). Each node has an ECDSA keypair it uses to sign messages.
+
 
 ## Status.
 
-Protocol runs and achieves consensus, with rounds, epochs.
+Protocol runs and achieves consensus, with rounds, epochs. 
 
 See [PLAN](./PLAN.md) for the backlog.
 
@@ -29,6 +30,9 @@ See [PLAN](./PLAN.md) for the backlog.
 
 ```sh
 cargo build
+
+cargo run --example standalone-channels
+cargo run --example standalone-http
 ```
 
 ### Using it.

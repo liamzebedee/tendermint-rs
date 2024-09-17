@@ -142,16 +142,20 @@ impl Process {
 
             self.receive_messages_until_timeout(MessageType::Propose, propose_timeout, |msg| {
                 if let Message::Propose { round: r, value } = msg.body {
-                    println!(
-                        "Node {} received proposal from Node {}: {}",
-                        self.id, msg.sender, value
-                    );
-                    epoch.proposals.insert(r, value);
-                    return true
+                    if r == round {
+                        println!(
+                            "Node {} received proposal from Node {}: {}",
+                            self.id, msg.sender, value
+                        );
+                        epoch.proposals.insert(r, value);
+                        return true
+                    }
                 }
                 false
-            })
-            .await;
+            }, || {
+                // Timeout reached
+                println!("Node {} timed out waiting for proposals in round {}", self.id, round);
+            }).await;
         }
 
         // Prevote phase
@@ -177,13 +181,15 @@ impl Process {
                 }
             }
             false
-        })
-        .await;
+        }, || {
+            // Timeout reached
+            println!("Node {} timed out waiting for prevotes in round {}", self.id, round);
+        }).await;
         epoch.prevotes.insert(round, prevotes.clone());
 
         // Determine decision based on prevotes
         let decision = Self::majority_decision(&prevotes);
-        println!("Node {} decided on {:?}", self.id, decision);
+        // println!("Node {} decided on {:?}", self.id, decision);
         self.broadcast(Message::Precommit { round, value: decision.clone() }).await;
 
         // Collect precommits
@@ -204,8 +210,10 @@ impl Process {
                 }
             }
             false
-        })
-        .await;
+        }, || {
+            // Timeout reached
+            println!("Node {} timed out waiting for precommits in round {}", self.id, round);
+        }).await;
         epoch.precommits.insert(round, precommits.clone());
 
         // Final decision
@@ -214,12 +222,8 @@ impl Process {
             // Consensus reached
             epoch.decision = decision;
         } else {
-            println!("Node {} failed to commit in round {}. Moving to next round.", self.id, round);
+            println!("Node {} failed to decide in round {}. Moving to next round.", self.id, round);
         }
-
-        // wait 2s.
-        // println!{"\n\n"};
-        // tokio::time::sleep(Duration::from_secs(2)).await;
 
         epoch
     }
@@ -236,6 +240,7 @@ impl Process {
         msg_type: MessageType,
         timeout_duration: Duration,
         mut handler: impl FnMut(SignedMessage) -> bool,
+        on_timeout: impl Fn() -> (),
     ) {
         let start = tokio::time::Instant::now();
         let mut receiver = self.receiver.lock().await;
@@ -254,6 +259,7 @@ impl Process {
                 }
                 _ => {
                     // Timeout reached or channel closed
+                    on_timeout();
                     break;
                 }
             }

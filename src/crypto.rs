@@ -1,9 +1,13 @@
 use rand::rngs::OsRng;
 use secp256k1::{ecdsa::SerializedSignature, Message, Secp256k1, SecretKey};
 use sha3::{Digest, Keccak256};
-// use core::slice::SlicePattern;
-// use std::io::Read;
 use std::str::FromStr;
+use std::{
+    fmt,
+    fmt::{Display, Formatter},
+};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 
 #[derive(Clone, Debug, Copy)]
 pub struct Signature(secp256k1::ecdsa::SerializedSignature);
@@ -13,6 +17,7 @@ pub struct PublicKey(secp256k1::PublicKey);
 
 pub type Keypair = ECDSAKeypair;
 
+#[derive(Debug)]
 pub struct ECDSAKeypair {
     secret_key: SecretKey,
     public_key: PublicKey,
@@ -71,10 +76,7 @@ pub fn verify_signature(
     secp.verify_ecdsa(&message, &signature.to_signature().unwrap(), &public_key.0).is_ok()
 }
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
 // PublicKey.
-
 // Deserialize.
 impl<'de> Deserialize<'de> for PublicKey {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -155,11 +157,6 @@ impl Signature {
         self.0
     }
 }
-
-use std::{
-    fmt,
-    fmt::{Display, Formatter},
-};
 
 impl Display for PublicKey {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {

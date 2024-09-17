@@ -4,8 +4,8 @@ pub mod events;
 pub mod messages;
 pub mod params;
 pub mod process;
-mod rpc_client;
-mod rpc_server;
+pub mod rpc_client;
+pub mod rpc_server;
 
 #[cfg(test)]
 mod tests {

@@ -39,31 +39,3 @@ where
         let _ = self.sender.send(event); // Ignore the error for simplicity
     }
 }
-
-// #[tokio::main]
-// async fn main() {
-//     let event_system = EventSystem::new();
-
-//     // Subscriber 1
-// let mut subscriber1 = event_system.subscribe();
-// tokio::spawn(async move {
-//     while let Some(event) = subscriber1.next().await {
-//         println!("Subscriber 1 received: {}", event);
-//     }
-// });
-
-//     // Subscriber 2
-//     let mut subscriber2 = event_system.subscribe();
-//     tokio::spawn(async move {
-//         while let Some(event) = subscriber2.next().await {
-//             println!("Subscriber 2 received: {}", event);
-//         }
-//     });
-
-//     // Publish events
-//     event_system.publish("Event 1".to_string());
-//     event_system.publish("Event 2".to_string());
-
-//     // Allow some time for the events to be processed
-//     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-// }

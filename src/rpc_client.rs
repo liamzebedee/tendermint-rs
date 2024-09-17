@@ -45,7 +45,6 @@ where
                     match client.post(&url).json(&message).send().await {
                         Ok(response) => {
                             if response.status().is_success() {
-                                println!("Message sent successfully");
                             } else {
                                 eprintln!("Failed to send message: {:?}", response);
                                 // print response body
