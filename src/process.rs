@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 use tokio::{
     sync::{mpsc, Mutex},
     time::{timeout, Duration},
 };
 
-use crate::{algos::*, events::*, messages::*, params::*, crypto::*};
+use crate::{algos::*, crypto::*, events::*, messages::*, params::*};
 
 #[derive(Debug, Clone)]
 pub enum Event {
@@ -18,7 +18,7 @@ pub struct Process {
     pub keypair: Keypair,
 
     /// Channel to receive messages from other processes.
-    receiver: Mutex<mpsc::Receiver<SignedMessage>>,
+    receiver: Arc<Mutex<mpsc::Receiver<SignedMessage>>>,
 
     /// Channels to send messages to other processes.
     processes: Vec<mpsc::Sender<SignedMessage>>,
@@ -49,7 +49,7 @@ impl Process {
     pub fn new(
         id: usize,
         keypair: Keypair,
-        receiver: mpsc::Receiver<SignedMessage>,
+        receiver: Arc<Mutex<mpsc::Receiver<SignedMessage>>>,
         processes: Vec<mpsc::Sender<SignedMessage>>,
         proposer_sequence: Vec<usize>,
         get_value: fn() -> String,
@@ -57,7 +57,7 @@ impl Process {
         Process {
             id,
             keypair,
-            receiver: Mutex::new(receiver),
+            receiver,
             processes,
             proposer_sequence,
             decisions: Vec::new(),
@@ -142,12 +142,16 @@ impl Process {
 
             self.receive_messages_until_timeout(MessageType::Propose, propose_timeout, |msg| {
                 if let Message::Propose { round: r, value } = msg.body {
-                    println!("Node {} received proposal from Node {}: {}", self.id, msg.sender, value);
+                    println!(
+                        "Node {} received proposal from Node {}: {}",
+                        self.id, msg.sender, value
+                    );
                     epoch.proposals.insert(r, value);
                     return true
                 }
                 false
-            }).await;
+            })
+            .await;
         }
 
         // Prevote phase
@@ -156,9 +160,9 @@ impl Process {
 
         // Collect prevotes
         let prevote_timeout = get_timeout_for_round(round);
-        let start = tokio::time::Instant::now();
+        let _start = tokio::time::Instant::now();
         let mut prevotes = Vec::new();
-        
+
         self.receive_messages_until_timeout(MessageType::Prevote, prevote_timeout, |msg| {
             if let Message::Prevote { round: r, value } = msg.body {
                 if r == round {
@@ -173,7 +177,8 @@ impl Process {
                 }
             }
             false
-        }).await;
+        })
+        .await;
         epoch.prevotes.insert(round, prevotes.clone());
 
         // Determine decision based on prevotes
@@ -182,7 +187,7 @@ impl Process {
         self.broadcast(Message::Precommit { round, value: decision.clone() }).await;
 
         // Collect precommits
-        let precommit_timeout = get_timeout_for_round(round);
+        let _precommit_timeout = get_timeout_for_round(round);
         let mut precommits = Vec::new();
 
         self.receive_messages_until_timeout(MessageType::Precommit, prevote_timeout, |msg| {
@@ -199,7 +204,8 @@ impl Process {
                 }
             }
             false
-        }).await;
+        })
+        .await;
         epoch.precommits.insert(round, precommits.clone());
 
         // Final decision
@@ -229,7 +235,7 @@ impl Process {
         &self,
         msg_type: MessageType,
         timeout_duration: Duration,
-        mut handler : impl FnMut(SignedMessage) -> bool,
+        mut handler: impl FnMut(SignedMessage) -> bool,
     ) {
         let start = tokio::time::Instant::now();
         let mut receiver = self.receiver.lock().await;
@@ -242,10 +248,8 @@ impl Process {
                         continue;
                     }
 
-                    if msg_type.matches(&msg.body) {
-                        if handler(msg) {
-                            break;
-                        }
+                    if msg_type.matches(&msg.body) && handler(msg) {
+                        break;
                     }
                 }
                 _ => {

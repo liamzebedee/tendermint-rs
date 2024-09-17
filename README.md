@@ -7,6 +7,8 @@ Dependencies:
  * tokio - for async runtime.
  * secp256k1 - for cryptographic identities.
  * serde - for message serialisation.
+ * warp/reqwest - for HTTP server/clients (for node RPC).
+ * hex.
 
 ## Conceptual overview.
 

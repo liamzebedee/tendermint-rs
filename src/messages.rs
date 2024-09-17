@@ -1,10 +1,7 @@
 // mod crypto;
 
-use crate::crypto::{Signature, PublicKey, Keypair, verify_signature};
+use crate::crypto::{verify_signature, Keypair, PublicKey, Signature};
 use serde::{Deserialize, Serialize};
-use serde_json::Serializer;
-use serde_canonical_json::CanonicalFormatter;
-
 
 // Define message types
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,7 +27,7 @@ impl MessageType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedMessage {
     pub body: Message,
     pub signature: Signature,
@@ -48,12 +45,6 @@ impl SignedMessage {
 
     pub fn verify(&self) -> bool {
         let sz: String = serde_json::to_string(&self.body).unwrap();
-        verify_signature(sz.as_bytes(), &self.signature, self.sender)
+        verify_signature(sz.as_bytes(), &self.signature.to_inner(), self.sender)
     }
-
 }
-
-// Somehow:
-// - nodes sign messages
-// - nodes receive messages
-// - messages which do not have a valid signature are discarded

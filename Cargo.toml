@@ -24,3 +24,7 @@ serde = { version = "1.0", features = ["derive"] }
 # but you may be using a different one.
 serde_json = "1.0"
 serde_canonical_json = "1.0.0"
+warp = "0.3.7"
+reqwest = { version = "0.12.7", features = ["json"] }
+hex = "0.4.3"
+

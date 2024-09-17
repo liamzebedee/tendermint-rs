@@ -14,7 +14,7 @@ pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
         # Tendermint is a byzantine fault-tolerant consensus algorithm.
         # It consists of a validator set, where each validator is a node with a public key and some voting power.
 
-        
+
         # vset - the validator set
         # n - the number of validators
         # VP(i) - voting power of validator i

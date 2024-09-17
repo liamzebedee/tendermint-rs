@@ -1,9 +1,11 @@
 pub mod algos;
+pub mod crypto;
 pub mod events;
 pub mod messages;
 pub mod params;
 pub mod process;
-pub mod crypto;
+mod rpc_client;
+mod rpc_server;
 
 #[cfg(test)]
 mod tests {
@@ -16,8 +18,8 @@ mod tests {
         let data = b"gm tendermint";
 
         let signature = keypair.sign(data);
-        assert!(verify_signature(data, &signature, keypair.get_public_key()));
-        
+        assert!(verify_signature(data, &signature.to_inner(), keypair.get_public_key()));
+
         println!("Signature verified successfully!");
     }
 }
