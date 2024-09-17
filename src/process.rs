@@ -4,7 +4,7 @@ use tokio::{
     time::{timeout, Duration},
 };
 
-use crate::{algos::*, events::*, messages::*, params::*};
+use crate::{algos::*, events::*, messages::*, params::*, crypto::*};
 
 #[derive(Debug, Clone)]
 pub enum Event {
@@ -15,11 +15,13 @@ pub enum Event {
 pub struct Process {
     pub id: usize,
 
+    pub keypair: Keypair,
+
     /// Channel to receive messages from other processes.
-    receiver: Mutex<mpsc::Receiver<Message>>,
+    receiver: Mutex<mpsc::Receiver<SignedMessage>>,
 
     /// Channels to send messages to other processes.
-    processes: Vec<mpsc::Sender<Message>>,
+    processes: Vec<mpsc::Sender<SignedMessage>>,
     proposer_sequence: Vec<usize>,
 
     /// Event source.
@@ -46,13 +48,15 @@ pub struct EpochState {
 impl Process {
     pub fn new(
         id: usize,
-        receiver: mpsc::Receiver<Message>,
-        processes: Vec<mpsc::Sender<Message>>,
+        keypair: Keypair,
+        receiver: mpsc::Receiver<SignedMessage>,
+        processes: Vec<mpsc::Sender<SignedMessage>>,
         proposer_sequence: Vec<usize>,
         get_value: fn() -> String,
     ) -> Self {
         Process {
             id,
+            keypair,
             receiver: Mutex::new(receiver),
             processes,
             proposer_sequence,
@@ -127,7 +131,7 @@ impl Process {
             // Propose a value.
             let value = (self.get_value)();
             println!("Node {} proposing value {}", self.id, value);
-            self.broadcast(Message::Propose { round, value: value.clone(), from: self.id }).await;
+            self.broadcast(Message::Propose { round, value: value.clone() }).await;
             // Save own proposal
             epoch.proposals.insert(round, value);
         }
@@ -135,91 +139,68 @@ impl Process {
         // Await proposals
         if self.id != proposer {
             let propose_timeout = get_timeout_for_round(round);
-            let propose = self.receive_messages(round, MessageType::Propose, propose_timeout).await;
-            if let Some(Message::Propose { round: r, value, from }) = propose {
-                println!("Node {} received proposal from Node {}: {}", self.id, from, value);
-                epoch.proposals.insert(r, value);
-            } else {
-                println!("Node {} did not receive proposal in round {}", self.id, round);
-            }
+
+            self.receive_messages_until_timeout(MessageType::Propose, propose_timeout, |msg| {
+                if let Message::Propose { round: r, value } = msg.body {
+                    println!("Node {} received proposal from Node {}: {}", self.id, msg.sender, value);
+                    epoch.proposals.insert(r, value);
+                    return true
+                }
+                false
+            }).await;
         }
 
         // Prevote phase
         let proposal = epoch.proposals.get(&round).cloned();
-        self.broadcast(Message::Prevote { round, value: proposal.clone(), from: self.id }).await;
+        self.broadcast(Message::Prevote { round, value: proposal.clone() }).await;
 
         // Collect prevotes
         let prevote_timeout = get_timeout_for_round(round);
         let start = tokio::time::Instant::now();
         let mut prevotes = Vec::new();
-        {
-            let mut receiver = self.receiver.lock().await;
-
-            while start.elapsed() < prevote_timeout {
-                match timeout(prevote_timeout - start.elapsed(), receiver.recv()).await {
-                    Ok(Some(Message::Prevote { round: r, value, from })) => {
-                        if r == round {
-                            prevotes.push(value.clone());
-                            println!(
-                                "Node {} received prevote from Node {}: {:?}",
-                                self.id, from, value
-                            );
-                            if prevotes.len() >= QUORUM {
-                                break;
-                            }
-                        }
-                    }
-                    Ok(Some(_)) => {
-                        // Ignore other message types
-                        continue;
-                    }
-                    _ => {
-                        // Timeout reached or channel closed
-                        break;
+        
+        self.receive_messages_until_timeout(MessageType::Prevote, prevote_timeout, |msg| {
+            if let Message::Prevote { round: r, value } = msg.body {
+                if r == round {
+                    prevotes.push(value.clone());
+                    println!(
+                        "Node {} received prevote from Node {}: {:?}",
+                        self.id, msg.sender, value
+                    );
+                    if prevotes.len() >= QUORUM {
+                        return true;
                     }
                 }
             }
-            epoch.prevotes.insert(round, prevotes.clone());
-        }
+            false
+        }).await;
+        epoch.prevotes.insert(round, prevotes.clone());
 
         // Determine decision based on prevotes
         let decision = Self::majority_decision(&prevotes);
         println!("Node {} decided on {:?}", self.id, decision);
-        self.broadcast(Message::Precommit { round, value: decision.clone(), from: self.id }).await;
+        self.broadcast(Message::Precommit { round, value: decision.clone() }).await;
 
         // Collect precommits
         let precommit_timeout = get_timeout_for_round(round);
         let mut precommits = Vec::new();
-        let start = tokio::time::Instant::now();
 
-        {
-            let mut receiver = self.receiver.lock().await;
-            while start.elapsed() < precommit_timeout {
-                match timeout(precommit_timeout - start.elapsed(), receiver.recv()).await {
-                    Ok(Some(Message::Precommit { round: r, value, from })) => {
-                        if r == round {
-                            precommits.push(value.clone());
-                            println!(
-                                "Node {} received precommit from Node {}: {:?}",
-                                self.id, from, value
-                            );
-                            if precommits.len() >= QUORUM {
-                                break;
-                            }
-                        }
-                    }
-                    Ok(Some(_)) => {
-                        // Ignore other message types
-                        continue;
-                    }
-                    _ => {
-                        // Timeout reached or channel closed
-                        break;
+        self.receive_messages_until_timeout(MessageType::Precommit, prevote_timeout, |msg| {
+            if let Message::Precommit { round: r, value } = msg.body {
+                if r == round {
+                    precommits.push(value.clone());
+                    println!(
+                        "Node {} received precommit from Node {}: {:?}",
+                        self.id, msg.sender, value
+                    );
+                    if precommits.len() >= QUORUM {
+                        return true;
                     }
                 }
             }
-            epoch.precommits.insert(round, precommits.clone());
-        }
+            false
+        }).await;
+        epoch.precommits.insert(round, precommits.clone());
 
         // Final decision
         if Self::count_occurrences(&precommits, &decision) >= QUORUM {
@@ -238,24 +219,41 @@ impl Process {
     }
 
     async fn broadcast(&self, msg: Message) {
+        let signed_msg = SignedMessage::new(msg, &self.keypair);
         for sender in &self.processes {
-            let _ = sender.send(msg.clone()).await;
+            let _ = sender.send(signed_msg.clone()).await;
         }
     }
 
-    async fn receive_messages(
+    async fn receive_messages_until_timeout(
         &self,
-        _round: u64,
         msg_type: MessageType,
-        duration: Duration,
-    ) -> Option<Message> {
-        while let Ok(Some(msg)) = timeout(duration, self.receiver.lock().await.recv()).await {
-            if msg_type.matches(&msg) {
-                return Some(msg);
+        timeout_duration: Duration,
+        mut handler : impl FnMut(SignedMessage) -> bool,
+    ) {
+        let start = tokio::time::Instant::now();
+        let mut receiver = self.receiver.lock().await;
+
+        while start.elapsed() < timeout_duration {
+            match timeout(timeout_duration - start.elapsed(), receiver.recv()).await {
+                Ok(Some(msg)) => {
+                    if !msg.verify() {
+                        // Ignore messages with invalid signatures.
+                        continue;
+                    }
+
+                    if msg_type.matches(&msg.body) {
+                        if handler(msg) {
+                            break;
+                        }
+                    }
+                }
+                _ => {
+                    // Timeout reached or channel closed
+                    break;
+                }
             }
         }
-
-        None
     }
 
     fn majority_decision(prevotes: &Vec<Option<String>>) -> Option<String> {

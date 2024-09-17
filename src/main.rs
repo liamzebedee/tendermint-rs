@@ -9,11 +9,28 @@ mod events;
 mod messages;
 mod params;
 mod process;
+mod crypto;
 
-use crate::{params::*, process::*};
+use params::*;
+use process::*;
+use crypto::ECDSAKeypair;
+
+fn generate_node_keys() {
+    for i in 0..NODES {
+        let keypair = ECDSAKeypair::new();
+        // Print pubkey,privkey in hex.
+        println!("Keypair {:?} pub={:?} prv={:?}", i, keypair.get_public_key().to_string(), keypair.get_secret_key().display_secret().to_string());
+
+        let keypair2 = ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string());
+        println!("Keypair {:?} pub={:?} prv={:?}", i, keypair2.get_public_key().to_string(), keypair2.get_secret_key().display_secret().to_string());
+    }
+}
 
 #[tokio::main]
 async fn main() {
+    generate_node_keys();
+    // return;
+
     // Create channels for each node
     let mut senders = Vec::new();
     let mut receivers = VecDeque::new();
@@ -39,8 +56,9 @@ async fn main() {
                 node_senders.push(senders[j].clone());
             }
         }
+        let keypair = ECDSAKeypair::new();
         let receiver = receivers.pop_front().unwrap();
-        let node = Process::new(i, receiver, node_senders, proposer_sequence.clone(), get_value);
+        let node = Process::new(i, keypair, receiver, node_senders, proposer_sequence.clone(), get_value);
         nodes.push(node);
     }
 

@@ -5,11 +5,10 @@ pub mod params;
 pub mod process;
 pub mod crypto;
 
-pub use crate::crypto::*;
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crypto::verify_signature;
 
     #[test]
     fn test_create_sign() {
@@ -17,7 +16,7 @@ mod tests {
         let data = b"gm tendermint";
 
         let signature = keypair.sign(data);
-        assert!(keypair.verify(data, &signature));
+        assert!(verify_signature(data, &signature, keypair.get_public_key()));
         
         println!("Signature verified successfully!");
     }

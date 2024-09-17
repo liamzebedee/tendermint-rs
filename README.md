@@ -6,6 +6,7 @@ Dependencies:
 
  * tokio - for async runtime.
  * secp256k1 - for cryptographic identities.
+ * serde - for message serialisation.
 
 ## Conceptual overview.
 
