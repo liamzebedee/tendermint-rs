@@ -22,6 +22,7 @@ Demo network:
  - [ ] startup node.
  - [ ] connect to server listing all validators and their ip's.
  - [ ] try listen for other nodes.
+ - [ ] choose get value function - idk probably most recently 
 
 Ideas:
  - [ ] motomint - tendermint but the proposer set is dictated by POW. Basically 

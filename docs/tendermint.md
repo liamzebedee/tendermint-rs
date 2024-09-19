@@ -56,3 +56,9 @@ In fact, it can be shown that the upper limit on f for Byzantine faults is f < N
 
 Byzantine fault tolerance
 2 phase commit - prepare and commit
+
+
+
+Sync
+Why do we need to sync?
+We don't really
