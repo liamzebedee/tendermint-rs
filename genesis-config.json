@@ -1,0 +1,9 @@
+{
+  "validators": [
+    {
+      "pubkey": "0304b21e18f1f730379f9df2fa46f335262224bab550d7de4473691719a4beec60",
+      "address": "0.0.0.0",
+      "port": 3030
+    }
+  ]
+}

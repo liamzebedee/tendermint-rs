@@ -1,5 +1,5 @@
 use serde::{de::DeserializeOwned, Serialize};
-use std::sync::Arc;
+use std::{net::IpAddr, sync::Arc};
 use tokio::sync::{mpsc, Mutex};
 use warp::Filter;
 
@@ -7,6 +7,7 @@ pub struct Server<T> {
     sender: mpsc::Sender<T>,
     // receiver: mpsc::Receiver<T>,
     receiver: Arc<Mutex<mpsc::Receiver<T>>>,
+    pub addr: IpAddr,
     pub port: u16,
 }
 
@@ -14,9 +15,9 @@ impl<T> Server<T>
 where
     T: Send + Sync + 'static + Serialize + DeserializeOwned + std::fmt::Debug + Clone,
 {
-    pub fn new(port: u16) -> Self {
+    pub fn new(addr: IpAddr, port: u16) -> Self {
         let (sender, receiver) = mpsc::channel(100);
-        Server { sender, receiver: Arc::new(Mutex::new(receiver)), port }
+        Server { sender, receiver: Arc::new(Mutex::new(receiver)), addr, port }
     }
 
     pub fn get_receiver(&self) -> Arc<Mutex<mpsc::Receiver<T>>> {
@@ -44,6 +45,6 @@ where
         );
 
         // Start the server
-        warp::serve(inbox_route).run(([127, 0, 0, 1], self.port)).await;
+        warp::serve(inbox_route).run((self.addr, self.port)).await;
     }
 }

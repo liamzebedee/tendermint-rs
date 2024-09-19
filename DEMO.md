@@ -16,6 +16,14 @@ A network begins at a particular genesis timestamp, and progresses at an irregul
 cargo build --release
 ```
 
+## Setup network.
+
+```sh
+cargo run network > genesis-config.json
+cargo run account --new > account.json
+cargo run node --config genesis-config.json --account account.json
+```
+
 ## Install.
 
 ```sh

@@ -2,7 +2,7 @@
 use crate::utils::CmdSync;
 use clap::{Parser};
 use serde_json::Result;
-use tendermint::crypto::ECDSAKeypair;
+use tendermint::{config::AccountConfig, crypto::ECDSAKeypair};
 
 pub struct AccountsOutput {}
 
@@ -33,12 +33,18 @@ impl CmdSync for AccountsArgs {
 
 fn new_account() {
     let keypair = ECDSAKeypair::new();
+    let datum = AccountConfig {
+        pubkey: keypair.get_public_key().to_string(),
+        privkey: keypair.get_secret_key().display_secret().to_string()
+    };
+    println!("{}", serde_json::to_string_pretty(&datum).unwrap());
+    
     // Print pubkey,privkey in hex.
-    println!(
-        "Keypair pub={:?} prv={:?}",
-        keypair.get_public_key().to_string(),
-        keypair.get_secret_key().display_secret().to_string()
-    );
+    // println!(
+    //     "Keypair pub={:?} prv={:?}",
+    //     keypair.get_public_key().to_string(),
+    //     keypair.get_secret_key().display_secret().to_string()
+    // );
 
     // Verify generated keypair.
     // let keypair2 = ECDSAKeypair::new_from_privatekey(

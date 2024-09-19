@@ -5,6 +5,7 @@ use crate::utils::{CmdAsync, CmdSync};
 use clap::{Parser, Subcommand};
 use cmd::node::NodeArgs;
 use cmd::accounts::AccountsArgs;
+use cmd::network::NetworkArgs;
 
 #[derive(Debug, Parser)]
 #[clap(name = "tendermint")]
@@ -18,6 +19,7 @@ pub struct Opts {
 pub enum Subcommands {
     Node(NodeArgs),
     Accounts(AccountsArgs),
+    Network(NetworkArgs),
 }
 
 #[tokio::main]
@@ -29,7 +31,10 @@ async fn main() {
         },
         Subcommands::Accounts(cmd) => {
             cmd.run().unwrap();
-        }
+        },
+        Subcommands::Network(cmd) => {
+            cmd.run().unwrap();
+        },
     }
 
     // TODO: consider returning Result<T,E> for error codes.

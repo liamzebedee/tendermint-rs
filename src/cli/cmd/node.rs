@@ -2,27 +2,42 @@
 use crate::utils::{CmdAsync};
 use clap::{Parser, ValueHint};
 use serde_json::Result;
-//use std::io::prelude::*;
 use std::path::PathBuf;
+use std::net::IpAddr;
+use tendermint::config::{parse_config, AccountConfig, ValidatorInfo};
 
 pub struct NodeOutput {}
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct NodeArgs {
-    #[clap(
-        help = "A path to the execution trace.",
-        long,
-        value_hint = ValueHint::FilePath
-    )]
-    pub trace: PathBuf,
+    // port
+    #[clap(long, default_value = "3030")]
+    port: u16,
+
+    // host
+    #[clap(long, default_value = "0.0.0.0")]
+    host: IpAddr,
+
+    // privatekey
+    #[clap(long)]
+    account: PathBuf,
+
+    // genesis config.
+    #[clap(long)]
+    config: PathBuf,
 }
 
 impl CmdAsync for NodeArgs {
     type Output = Result<NodeOutput>;
 
     async fn run(self) -> Self::Output {
-        run_node().await;
+        let config = parse_config(self.config);
+        // Load the account config.
+        let accountData = std::fs::read_to_string(self.account).unwrap();
+        let account: AccountConfig = serde_json::from_str(&accountData).unwrap();
+        println!("Account: {:?}", account);
+        run_node(config.validators, self.host, self.port).await;
         Ok(NodeOutput {})
     }
 }
@@ -42,9 +57,12 @@ use tendermint::messages::SignedMessage;
 use tendermint::process::Process;
 use tendermint::rpc_server::Server;
 
-async fn run_node() {
+
+
+async fn run_node(validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
     // Network configuration:
     // - peers: (pubkey,address)[]
+    // Parse the configuration file.
 
     // Setup RPC server.
     // Setup RPC client for each peer.
@@ -59,7 +77,7 @@ async fn run_node() {
 
     let mut peer_senders = Vec::new();
 
-    let api_server = Server::<SignedMessage>::new(3030);
+    let api_server = Server::<SignedMessage>::new(host, port);
     let receiver = api_server.get_receiver();
     tokio::spawn(async move {
         api_server.run().await;
