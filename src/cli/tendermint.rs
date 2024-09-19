@@ -3,9 +3,7 @@ mod utils;
 
 use crate::utils::{CmdAsync, CmdSync};
 use clap::{Parser, Subcommand};
-use cmd::node::NodeArgs;
-use cmd::accounts::AccountsArgs;
-use cmd::network::NetworkArgs;
+use cmd::{accounts::AccountsArgs, network::NetworkArgs, node::NodeArgs};
 
 #[derive(Debug, Parser)]
 #[clap(name = "tendermint")]
@@ -28,13 +26,13 @@ async fn main() {
     match opts.sub {
         Subcommands::Node(cmd) => {
             cmd.run().await.unwrap();
-        },
+        }
         Subcommands::Accounts(cmd) => {
             cmd.run().unwrap();
-        },
+        }
         Subcommands::Network(cmd) => {
             cmd.run().unwrap();
-        },
+        }
     }
 
     // TODO: consider returning Result<T,E> for error codes.

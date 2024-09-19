@@ -1,16 +1,16 @@
-
 use crate::utils::CmdSync;
-use clap::{Parser};
+use clap::Parser;
 use serde_json::Result;
-use tendermint::config::{TendermintConfig, ValidatorInfo};
-use tendermint::crypto::ECDSAKeypair;
+use tendermint::{
+    config::{TendermintConfig, ValidatorInfo},
+    crypto::ECDSAKeypair,
+};
 
 pub struct NetworkOutput {}
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-pub struct NetworkArgs {
-}
+pub struct NetworkArgs {}
 
 impl CmdSync for NetworkArgs {
     type Output = Result<NetworkOutput>;
@@ -18,13 +18,11 @@ impl CmdSync for NetworkArgs {
     fn run(self) -> Self::Output {
         let keypair = ECDSAKeypair::new();
         let config = TendermintConfig {
-            validators: vec![
-                ValidatorInfo {
-                    pubkey: keypair.get_public_key().to_string(),
-                    address: "0.0.0.0".parse().unwrap(),
-                    port: 3030,
-                }
-            ],
+            validators: vec![ValidatorInfo {
+                pubkey: keypair.get_public_key().to_string(),
+                address: "0.0.0.0".parse().unwrap(),
+                port: 3030,
+            }],
         };
         // Print to JSON format (pretty)
         let config = serde_json::to_string_pretty(&config).unwrap();

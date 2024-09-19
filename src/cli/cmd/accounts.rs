@@ -1,6 +1,5 @@
-
 use crate::utils::CmdSync;
-use clap::{Parser};
+use clap::Parser;
 use serde_json::Result;
 use tendermint::{config::AccountConfig, crypto::ECDSAKeypair};
 
@@ -21,7 +20,6 @@ impl CmdSync for AccountsArgs {
     type Output = Result<AccountsOutput>;
 
     fn run(self) -> Self::Output {
-
         if self.list {
             // TODO.
         } else if self.new {
@@ -35,10 +33,10 @@ fn new_account() {
     let keypair = ECDSAKeypair::new();
     let datum = AccountConfig {
         pubkey: keypair.get_public_key().to_string(),
-        privkey: keypair.get_secret_key().display_secret().to_string()
+        privkey: keypair.get_secret_key().display_secret().to_string(),
     };
     println!("{}", serde_json::to_string_pretty(&datum).unwrap());
-    
+
     // Print pubkey,privkey in hex.
     // println!(
     //     "Keypair pub={:?} prv={:?}",

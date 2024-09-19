@@ -1,9 +1,7 @@
-
-use crate::utils::{CmdAsync};
-use clap::{Parser, ValueHint};
+use crate::utils::CmdAsync;
+use clap::Parser;
 use serde_json::Result;
-use std::path::PathBuf;
-use std::net::IpAddr;
+use std::{net::IpAddr, path::PathBuf};
 use tendermint::config::{parse_config, AccountConfig, ValidatorInfo};
 
 pub struct NodeOutput {}
@@ -42,24 +40,14 @@ impl CmdAsync for NodeArgs {
     }
 }
 
+use std::time::{SystemTime, UNIX_EPOCH};
 
-
-
-use std::collections::VecDeque;
-use tokio::sync::{mpsc, Mutex};
-use std::{
-    time::{SystemTime, UNIX_EPOCH},
+use tendermint::{
+    crypto::ECDSAKeypair, messages::SignedMessage, process::Process, rpc_server::Server,
 };
-
 use tokio_stream::StreamExt;
-use tendermint::crypto::ECDSAKeypair;
-use tendermint::messages::SignedMessage;
-use tendermint::process::Process;
-use tendermint::rpc_server::Server;
 
-
-
-async fn run_node(validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
+async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
     // Network configuration:
     // - peers: (pubkey,address)[]
     // Parse the configuration file.
@@ -75,7 +63,7 @@ async fn run_node(validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
 
     let keypair = ECDSAKeypair::new();
 
-    let mut peer_senders = Vec::new();
+    let peer_senders = Vec::new();
 
     let api_server = Server::<SignedMessage>::new(host, port);
     let receiver = api_server.get_receiver();
@@ -104,7 +92,9 @@ async fn run_node(validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
 
     tokio::spawn(async move {
         process.run_epoch(None).await;
-    }).await.unwrap();
+    })
+    .await
+    .unwrap();
 
     println!("Consensus reached.");
 }

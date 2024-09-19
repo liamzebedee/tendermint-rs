@@ -4,12 +4,9 @@ use std::{
     sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
+use tendermint::{crypto::ECDSAKeypair, params::*, process::*};
 use tokio::sync::{mpsc, Mutex};
 use tokio_stream::StreamExt;
-use tendermint::crypto::ECDSAKeypair;
-use tendermint::params::*;
-use tendermint::process::*;
-
 
 async fn setup_pure_sendreceive() {
     // Create channels for each node
@@ -75,7 +72,6 @@ async fn setup_pure_sendreceive() {
 
     println!("Consensus reached.");
 }
-
 
 #[tokio::main]
 async fn main() {

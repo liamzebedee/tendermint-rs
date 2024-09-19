@@ -1,4 +1,5 @@
 pub mod algos;
+pub mod config;
 pub mod crypto;
 pub mod events;
 pub mod messages;
@@ -6,7 +7,6 @@ pub mod params;
 pub mod process;
 pub mod rpc_client;
 pub mod rpc_server;
-pub mod config;
 
 #[cfg(test)]
 mod tests {

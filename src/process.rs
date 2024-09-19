@@ -140,22 +140,28 @@ impl Process {
         if self.id != proposer {
             let propose_timeout = get_timeout_for_round(round);
 
-            self.receive_messages_until_timeout(MessageType::Propose, propose_timeout, |msg| {
-                if let Message::Propose { round: r, value } = msg.body {
-                    if r == round {
-                        println!(
-                            "Node {} received proposal from Node {}: {}",
-                            self.id, msg.sender, value
-                        );
-                        epoch.proposals.insert(r, value);
-                        return true
+            self.receive_messages_until_timeout(
+                MessageType::Propose,
+                propose_timeout,
+                |msg| {
+                    if let Message::Propose { round: r, value } = msg.body {
+                        if r == round {
+                            println!(
+                                "Node {} received proposal from Node {}: {}",
+                                self.id, msg.sender, value
+                            );
+                            epoch.proposals.insert(r, value);
+                            return true
+                        }
                     }
-                }
-                false
-            }, || {
-                // Timeout reached
-                println!("Node {} timed out waiting for proposals in round {}", self.id, round);
-            }).await;
+                    false
+                },
+                || {
+                    // Timeout reached
+                    println!("Node {} timed out waiting for proposals in round {}", self.id, round);
+                },
+            )
+            .await;
         }
 
         // Prevote phase
@@ -167,24 +173,30 @@ impl Process {
         let _start = tokio::time::Instant::now();
         let mut prevotes = Vec::new();
 
-        self.receive_messages_until_timeout(MessageType::Prevote, prevote_timeout, |msg| {
-            if let Message::Prevote { round: r, value } = msg.body {
-                if r == round {
-                    prevotes.push(value.clone());
-                    println!(
-                        "Node {} received prevote from Node {}: {:?}",
-                        self.id, msg.sender, value
-                    );
-                    if prevotes.len() >= QUORUM {
-                        return true;
+        self.receive_messages_until_timeout(
+            MessageType::Prevote,
+            prevote_timeout,
+            |msg| {
+                if let Message::Prevote { round: r, value } = msg.body {
+                    if r == round {
+                        prevotes.push(value.clone());
+                        println!(
+                            "Node {} received prevote from Node {}: {:?}",
+                            self.id, msg.sender, value
+                        );
+                        if prevotes.len() >= QUORUM {
+                            return true;
+                        }
                     }
                 }
-            }
-            false
-        }, || {
-            // Timeout reached
-            println!("Node {} timed out waiting for prevotes in round {}", self.id, round);
-        }).await;
+                false
+            },
+            || {
+                // Timeout reached
+                println!("Node {} timed out waiting for prevotes in round {}", self.id, round);
+            },
+        )
+        .await;
         epoch.prevotes.insert(round, prevotes.clone());
 
         // Determine decision based on prevotes
@@ -196,24 +208,30 @@ impl Process {
         let _precommit_timeout = get_timeout_for_round(round);
         let mut precommits = Vec::new();
 
-        self.receive_messages_until_timeout(MessageType::Precommit, prevote_timeout, |msg| {
-            if let Message::Precommit { round: r, value } = msg.body {
-                if r == round {
-                    precommits.push(value.clone());
-                    println!(
-                        "Node {} received precommit from Node {}: {:?}",
-                        self.id, msg.sender, value
-                    );
-                    if precommits.len() >= QUORUM {
-                        return true;
+        self.receive_messages_until_timeout(
+            MessageType::Precommit,
+            prevote_timeout,
+            |msg| {
+                if let Message::Precommit { round: r, value } = msg.body {
+                    if r == round {
+                        precommits.push(value.clone());
+                        println!(
+                            "Node {} received precommit from Node {}: {:?}",
+                            self.id, msg.sender, value
+                        );
+                        if precommits.len() >= QUORUM {
+                            return true;
+                        }
                     }
                 }
-            }
-            false
-        }, || {
-            // Timeout reached
-            println!("Node {} timed out waiting for precommits in round {}", self.id, round);
-        }).await;
+                false
+            },
+            || {
+                // Timeout reached
+                println!("Node {} timed out waiting for precommits in round {}", self.id, round);
+            },
+        )
+        .await;
         epoch.precommits.insert(round, precommits.clone());
 
         // Final decision
@@ -240,7 +258,7 @@ impl Process {
         msg_type: MessageType,
         timeout_duration: Duration,
         mut handler: impl FnMut(SignedMessage) -> bool,
-        on_timeout: impl Fn() -> (),
+        on_timeout: impl Fn(),
     ) {
         let start = tokio::time::Instant::now();
         let mut receiver = self.receiver.lock().await;

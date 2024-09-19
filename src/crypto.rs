@@ -1,13 +1,12 @@
 use rand::rngs::OsRng;
 use secp256k1::{ecdsa::SerializedSignature, Message, Secp256k1, SecretKey};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sha3::{Digest, Keccak256};
-use std::str::FromStr;
 use std::{
     fmt,
     fmt::{Display, Formatter},
+    str::FromStr,
 };
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
 
 #[derive(Clone, Debug, Copy)]
 pub struct Signature(secp256k1::ecdsa::SerializedSignature);

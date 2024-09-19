@@ -1,12 +1,12 @@
-use std::collections::VecDeque;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    collections::VecDeque,
+    time::{SystemTime, UNIX_EPOCH},
+};
+use tendermint::{
+    crypto::ECDSAKeypair, messages::SignedMessage, params::*, process::*, rpc_client::RpcClient,
+    rpc_server::Server,
+};
 use tokio_stream::StreamExt;
-use tendermint::crypto::ECDSAKeypair;
-use tendermint::params::*;
-use tendermint::process::*;
-use tendermint::rpc_client::RpcClient;
-use tendermint::rpc_server::Server;
-use tendermint::messages::SignedMessage;
 
 async fn setup_api_servers() {
     // Create channels for each node
@@ -17,7 +17,7 @@ async fn setup_api_servers() {
 
     // Setup node API servers.
     for i in 0..NODES {
-        let server = Server::<SignedMessage>::new(3030 + i as u16);
+        let server = Server::<SignedMessage>::new("127.0.0.1".parse().unwrap(), 3030 + i as u16);
         receivers.push_back(server.get_receiver());
         let client = RpcClient::<SignedMessage>::new(
             100,
@@ -73,7 +73,7 @@ async fn setup_api_servers() {
 
     // Wait for all nodes to finish
     for handle in handles {
-        let _ = handle.await.unwrap();
+        handle.await.unwrap();
     }
 
     println!("Consensus reached.");

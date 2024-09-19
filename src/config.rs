@@ -1,6 +1,5 @@
-use std::net::IpAddr;
-use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use std::{net::IpAddr, path::PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidatorInfo {
@@ -11,7 +10,7 @@ pub struct ValidatorInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TendermintConfig {
-    pub validators: Vec<ValidatorInfo>
+    pub validators: Vec<ValidatorInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,7 +18,6 @@ pub struct AccountConfig {
     pub pubkey: String,
     pub privkey: String,
 }
-
 
 pub fn parse_config(config: PathBuf) -> TendermintConfig {
     // Parse the configuration file.
