@@ -57,10 +57,6 @@ async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
     // Setup process.
     // Run process.
 
-    // let peers = [
-    //     ("http://localhost:3001"),
-    // ];
-
     let keypair = ECDSAKeypair::new();
 
     let peer_senders = Vec::new();
@@ -74,7 +70,7 @@ async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
     //     client.start().await;
     // });
 
-    /// The function to get the current value for the chain.
+    // The function to get the current value for the chain.
     let get_value = || SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs().to_string();
 
     // Define proposer sequence (round-robin)

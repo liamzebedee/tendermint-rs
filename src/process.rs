@@ -22,6 +22,8 @@ pub struct Process {
 
     /// Channels to send messages to other processes.
     processes: Vec<mpsc::Sender<SignedMessage>>,
+
+    /// The array of all proposers, used for proposer selection.
     proposer_sequence: Vec<usize>,
 
     /// Event source.
@@ -34,14 +36,22 @@ pub struct Process {
     get_value: fn() -> String,
 }
 
+
+
 /// Consensus operates in terms of epochs, which contain an unlimited number of rounds.
 #[derive(Debug, Clone)]
 pub struct EpochState {
+    /// The current height of the consensus instance.
     height: u64,
+    /// The current round number.
     round: u64,
+    /// Stores a proposal received for each round.
     proposals: HashMap<u64, String>,
+    /// Stores prevote messages received for each round.
     prevotes: HashMap<u64, Vec<Option<String>>>,
+    /// Stores precommit messages received for each round.
     precommits: HashMap<u64, Vec<Option<String>>>,
+    /// The decision reached by the consensus algorithm, if any.
     decision: Option<String>,
 }
 
@@ -95,6 +105,7 @@ impl Process {
             precommits: HashMap::new(),
             decision: None,
         });
+        
         loop {
             epoch_state = self.run_round(epoch_state).await;
 

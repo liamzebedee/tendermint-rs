@@ -3,13 +3,17 @@ use std::{net::IpAddr, path::PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidatorInfo {
+    /// The public key of the validator.
     pub pubkey: String,
+    /// The IP address of the validator.
     pub address: IpAddr,
+    /// The IP port of the validator.
     pub port: u16,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TendermintConfig {
+    /// The set of validators at genesis.
     pub validators: Vec<ValidatorInfo>,
 }
 

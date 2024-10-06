@@ -75,5 +75,8 @@ pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
 /// Timeout in Tendermint increases exponentially with round number, in order to give more time for
 /// nodes to reach consensus in the presence of delays.
 pub fn get_timeout_for_round(_round: u64) -> Duration {
+    // timeout constnats.
+    // The timeouts prevent the algorithm from blocking and waiting forever for some condition to be true, ensure that processes continuously transition between rounds, and guarantee that eventually (after GST) communication between correct processes is timely and reliable so they can decide
+    // The last role is achieved by increasing the timeouts with every new round r, i.e, timeoutX(r) = initT timeoutX + r * timeoutDelta; they are reset for every new height (consensus instance).
     Duration::from_millis(1000)
 }

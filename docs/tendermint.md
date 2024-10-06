@@ -59,6 +59,3 @@ Byzantine fault tolerance
 
 
 
-Sync
-Why do we need to sync?
-We don't really

@@ -1,5 +1,3 @@
-// mod crypto;
-
 use crate::crypto::{verify_signature, Keypair, PublicKey, Signature};
 use serde::{Deserialize, Serialize};
 

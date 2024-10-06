@@ -168,3 +168,19 @@ impl Display for Signature {
         write!(f, "{}", self.0)
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // use crypto::verify_signature;
+
+    #[test]
+    fn test_parse_keypair() {
+        let keypair = ECDSAKeypair::new();
+        let keypair2 = ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string(),);
+        // Verify generated keypair.
+        assert!(keypair2.get_secret_key().display_secret().to_string() == keypair.get_secret_key().display_secret().to_string());
+        assert!(keypair2.get_public_key().to_string() == keypair.get_public_key().to_string());
+    }
+}
