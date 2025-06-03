@@ -26,7 +26,3 @@ Demo network:
  - [ ] peer handshake - dial and allow peers to add each other to the routing table. connect with "senders" channel.
  - [ ] connect to server listing all validators and their ip's.
  - [ ] choose get value function - idk probably most recently 
-
-Ideas:
- - [ ] motomint - tendermint but the proposer set is dictated by POW. Basically 
-

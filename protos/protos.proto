@@ -1,0 +1,86 @@
+syntax = "proto3";
+package protos;
+
+service ValidatorService {
+    // Sync: Get more than one block for resyncing fully.
+    rpc GetHistory(GetHistoryQuery) returns (GetHistoryResponse);
+    // Sync: Get the latest block for reconnecting to network.
+    rpc GetLatest(GetLatestQuery) returns (GetLatestResponse);
+
+    // Gossip transactions to other nodes.
+    rpc GossipTxs(stream TxGossip) returns (stream TxGossip);
+
+    // Consensus: Propose.
+    rpc Propose(ProposeMessage) returns (ProposeResponse);
+    // Consensus: Prevote.
+    rpc Prevote(VoteMessage) returns (PrevoteResponse);
+    // // Consensus: Precommit.
+    rpc Precommit(VoteMessage) returns (PrecommitResponse);
+}
+
+// 
+// SYNC.
+// 
+
+message GetHistoryQuery {
+    int64 start_height = 1;
+    int64 end_height = 2;
+}
+
+message GetHistoryResponse {
+    repeated Block blocks = 1;
+    repeated VoteMessage votes = 2;
+}
+
+message GetLatestQuery {}
+
+message GetLatestResponse {
+    repeated VoteMessage votes = 1;
+    int64 localTime = 2;
+}
+
+message Block {
+    repeated Transaction txs = 1;
+    bytes proposer = 2;
+    bytes previous_block_hash = 3;
+}
+
+message TxGossip {
+    repeated Transaction txs = 1;
+}
+
+message Transaction {
+    bytes data = 1;
+    bytes sig = 2;
+    bytes sender = 3;
+    int64 timestamp = 4;
+}
+
+enum MessageType {
+    PROPOSE = 1;
+    PREVOTE = 2;
+    PRECOMMIT = 3;
+}
+
+message ProposeMessage {
+    MessageType msgType = 5;
+    int64 round = 1;
+    int64 height = 2;
+    bytes value = 3;
+    bytes sig = 4;
+    bytes sender = 5;
+    int64 timestamp = 6;
+}
+
+message VoteMessage {
+    MessageType msgType = 5;
+    int64 round = 1;
+    int64 height = 2;
+    bytes value = 3;
+    bytes sig = 4;
+    bytes sender = 5;
+    int64 timestamp = 6;
+}
+
+message PrevoteResponse {}
+message PrecommitResponse {}
