@@ -1,4 +1,6 @@
 use tokio::time::Duration;
+use std::collections::HashMap;
+use crate::params::QUORUM;
 
 /// Gets the proposer for a round.
 pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
@@ -12,8 +14,7 @@ pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
         /*
         # Tendermint is a byzantine fault-tolerant consensus algorithm.
         # It consists of a validator set, where each validator is a node with a public key and some voting power.
-
-
+        
         # vset - the validator set
         # n - the number of validators
         # VP(i) - voting power of validator i
@@ -79,4 +80,21 @@ pub fn get_timeout_for_round(_round: u64) -> Duration {
     // The timeouts prevent the algorithm from blocking and waiting forever for some condition to be true, ensure that processes continuously transition between rounds, and guarantee that eventually (after GST) communication between correct processes is timely and reliable so they can decide
     // The last role is achieved by increasing the timeouts with every new round r, i.e, timeoutX(r) = initT timeoutX + r * timeoutDelta; they are reset for every new height (consensus instance).
     Duration::from_millis(1000)
+}
+
+pub fn majority_decision(prevotes: &Vec<Option<String>>) -> Option<String> {
+    let mut counts = HashMap::new();
+    for vote in prevotes {
+        *counts.entry(vote.clone()).or_insert(0) += 1;
+    }
+    counts
+        .into_iter()
+        .max_by_key(|&(_, count)| count)
+        .filter(|&(_, count)| count >= QUORUM)
+        .map(|(value, _)| value)
+        .unwrap_or(None)
+}
+
+fn count_occurrences(precommits: &Vec<Option<String>>, decision: &Option<String>) -> usize {
+    precommits.iter().filter(|&v| v == decision).count()
 }

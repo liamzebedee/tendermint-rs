@@ -11,10 +11,10 @@ Features:
    - [x] get value
    - [x] on new decision
  - [x] add pubkey identities for nodes. add signatures to node messages.
- - [ ] fix consensus height + stuff. commit data to log on disk.
+ - [x] fix consensus height + stuff. commit data to log on disk.
  - [ ] implement dynamic timeouts to allow network to resolve with backoff.
  - [x] change node to start up on a network interface and listen to messages.
- - [ ] add node sync so it restarts and gets history from other nodes for height before it.
+ - [x] add node sync so it restarts and gets history from other nodes for height before it.
  - [ ] check precommits/prevotes are unique.
  - sync: rewrite algo so that time is abstracted away, and we can simulate old consensus rounds.
 

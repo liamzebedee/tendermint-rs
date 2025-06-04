@@ -1,12 +1,17 @@
 pub mod algos;
+pub mod cli;
+pub mod clock;
 pub mod config;
 pub mod crypto;
 pub mod events;
 pub mod messages;
 pub mod params;
 pub mod process;
+pub mod protos;
+pub mod proposer_choice;
 pub mod rpc_client;
 pub mod rpc_server;
+pub mod types;
 
 #[cfg(test)]
 mod tests {

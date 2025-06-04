@@ -16,12 +16,12 @@ doc = false
 
 [dependencies]
 tokio = { version = "1", features = ["full", "sync"] }
-
+prost = "0.12"
 secp256k1 = { version = "0.24.0", features = ["rand"] }
 rand = "0.8.5"
 sha3 = "0.10.0"
 tokio-stream = { version = "0.1", features = ["sync"] }
-
+tonic = "0.11"
 # The core APIs, including the Serialize and Deserialize traits. Always
 # required when using Serde. The "derive" feature is only required when
 # using #[derive(Serialize, Deserialize)] to make Serde work with structs
@@ -36,4 +36,8 @@ warp = "0.3.7"
 reqwest = { version = "0.12.7", features = ["json"] }
 hex = "0.4.3"
 clap = { version = "3.1.18", features = ["derive"] }
+chrono = "0.4"
+futures = "0.3"
 
+[build-dependencies]
+tonic-build = "0.11"

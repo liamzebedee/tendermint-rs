@@ -1,22 +1,29 @@
 syntax = "proto3";
 package protos;
 
+message Empty {}
 service ValidatorService {
     // Sync: Get more than one block for resyncing fully.
     rpc GetHistory(GetHistoryQuery) returns (GetHistoryResponse);
     // Sync: Get the latest block for reconnecting to network.
     rpc GetLatest(GetLatestQuery) returns (GetLatestResponse);
 
+    // Connect to another node.
+    rpc Hello(HelloMessage) returns (Empty);
+
     // Gossip transactions to other nodes.
     rpc GossipTxs(stream TxGossip) returns (stream TxGossip);
 
     // Consensus: Propose.
-    rpc Propose(ProposeMessage) returns (ProposeResponse);
+    rpc Propose(ProposeMessage) returns (Empty);
     // Consensus: Prevote.
-    rpc Prevote(VoteMessage) returns (PrevoteResponse);
-    // // Consensus: Precommit.
-    rpc Precommit(VoteMessage) returns (PrecommitResponse);
+    rpc Prevote(VoteMessage) returns (Empty);
+    // Consensus: Precommit.
+    rpc Precommit(VoteMessage) returns (Empty);
 }
+
+// HANDSHAKE.
+message HelloMessage {}
 
 // 
 // SYNC.
@@ -43,6 +50,7 @@ message Block {
     repeated Transaction txs = 1;
     bytes proposer = 2;
     bytes previous_block_hash = 3;
+    int64 height = 4;
 }
 
 message TxGossip {
@@ -57,30 +65,27 @@ message Transaction {
 }
 
 enum MessageType {
-    PROPOSE = 1;
-    PREVOTE = 2;
-    PRECOMMIT = 3;
+    PROPOSE = 0;
+    PREVOTE = 1;
+    PRECOMMIT = 2;
 }
 
 message ProposeMessage {
-    MessageType msgType = 5;
-    int64 round = 1;
-    int64 height = 2;
-    bytes value = 3;
-    bytes sig = 4;
-    bytes sender = 5;
-    int64 timestamp = 6;
+    MessageType msgType = 1; // set as PROPOSE
+    int64 round = 2;
+    int64 height = 3;
+    Block value = 4;
+    bytes sig = 5;
+    bytes sender = 6;
+    int64 timestamp = 7;
 }
 
 message VoteMessage {
-    MessageType msgType = 5;
-    int64 round = 1;
-    int64 height = 2;
-    bytes value = 3;
-    bytes sig = 4;
-    bytes sender = 5;
-    int64 timestamp = 6;
+    MessageType msgType = 1; // set as PREVOTE or PRECOMMIT
+    int64 round = 2;
+    int64 height = 3;
+    bytes value = 4;
+    bytes sig = 5;
+    bytes sender = 6;
+    int64 timestamp = 7;
 }
-
-message PrevoteResponse {}
-message PrecommitResponse {}
