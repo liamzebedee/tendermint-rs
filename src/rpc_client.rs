@@ -1,68 +1,76 @@
-use reqwest::Client;
-use serde::Serialize;
-use std::{fmt::Debug, sync::Arc};
-use tokio::sync::{mpsc, Mutex};
+use std::net::SocketAddr;
+use tonic::transport::Channel;
+use crate::protos::{
+    validator_service_client::ValidatorServiceClient,
+    GetHistoryQuery, GetHistoryResponse, GetLatestQuery, GetLatestResponse,
+    ProposeMessage, VoteMessage, TxGossip, Transaction,
+};
 
-#[derive(Debug, Clone)]
-pub struct RpcClient<T> {
-    inbox_url: String,
-    sender: mpsc::Sender<T>, // Exposes the mpsc::Sender to send messages
-    client: Arc<Client>,     // Reqwest HTTP client wrapped in Arc for shared ownership
-    receiver: Arc<Mutex<mpsc::Receiver<T>>>, // Internal receiver used by the background task
+pub struct Client {
+    client: ValidatorServiceClient<Channel>,
 }
 
-impl<T> RpcClient<T>
-where
-    T: Send + 'static + Serialize + Debug, // T must implement Serialize to be posted via HTTP
-{
-    // Initialize the RpcClient with a given channel capacity and reqwest client
-    pub fn new(capacity: usize, inbox_url: String) -> Self {
-        let (sender, receiver) = mpsc::channel(capacity);
-        RpcClient {
-            inbox_url,
-            sender,
-            client: Arc::new(Client::new()),
-            receiver: Arc::new(Mutex::new(receiver)),
+impl Client {
+    pub async fn new(addr: SocketAddr) -> Result<Self, Box<dyn std::error::Error>> {
+        let client = ValidatorServiceClient::connect(format!("http://{}", addr)).await?;
+        Ok(Client { client })
+    }
+
+    pub async fn get_history(
+        &mut self,
+        start_height: i64,
+        end_height: i64,
+    ) -> Result<GetHistoryResponse, Box<dyn std::error::Error>> {
+        let request = GetHistoryQuery {
+            start_height,
+            end_height,
+        };
+        let response = self.client.get_history(request).await?;
+        Ok(response.into_inner())
+    }
+
+    pub async fn get_latest(&mut self) -> Result<GetLatestResponse, Box<dyn std::error::Error>> {
+        let request = GetLatestQuery {};
+        let response = self.client.get_latest(request).await?;
+        Ok(response.into_inner())
+    }
+
+    pub async fn propose(
+        &mut self,
+        propose_msg: ProposeMessage,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.client.propose(propose_msg).await?;
+        Ok(())
+    }
+
+    pub async fn prevote(
+        &mut self,
+        vote_msg: VoteMessage,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.client.prevote(vote_msg).await?;
+        Ok(())
+    }
+
+    pub async fn precommit(
+        &mut self,
+        vote_msg: VoteMessage,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.client.precommit(vote_msg).await?;
+        Ok(())
+    }
+
+    pub async fn gossip_txs(
+        &mut self,
+        txs: Vec<Transaction>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request = tonic::Request::new(futures::stream::iter(vec![TxGossip { txs }]));
+        let mut stream = self.client.gossip_txs(request).await?.into_inner();
+        
+        while let Some(response) = stream.message().await? {
+            // Process incoming transaction gossip
+            // TODO: Implement transaction gossip handling
         }
-    }
-
-    // Start the task that listens to the mpsc::Receiver and sends HTTP POST requests
-    pub async fn start(self) {
-        let receiver = self.receiver.clone();
-        let client = self.client.clone();
-
-        // Spawn a background task that listens for messages and sends them to /inbox
-        tokio::spawn(async move {
-            let mut receiver = receiver.lock().await;
-
-            // Loop over the messages in the receiver
-            while let Some(message) = receiver.recv().await {
-                let client = client.clone();
-                let url = self.inbox_url.clone();
-
-                // Send the HTTP POST request with the message
-                tokio::spawn(async move {
-                    match client.post(&url).json(&message).send().await {
-                        Ok(response) => {
-                            if response.status().is_success() {
-                            } else {
-                                eprintln!("Failed to send message: {:?}", response);
-                                // print response body
-                                eprintln!("Response body: {:?}", response.text().await);
-                                eprintln!("Message: {:?}", message);
-                            }
-                        }
-                        Err(err) => {
-                            eprintln!("HTTP error: {:?}", err);
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    // Expose the mpsc::Sender so that other parts of the code can send messages
-    pub fn get_sender(&self) -> mpsc::Sender<T> {
-        self.sender.clone()
+        
+        Ok(())
     }
 }

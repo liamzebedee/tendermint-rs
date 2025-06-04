@@ -3,8 +3,11 @@ use tokio::{
     sync::{mpsc, Mutex},
     time::{timeout, Duration},
 };
-
-use crate::{algos::*, crypto::*, events::*, messages::*, params::*};
+use crate::algos::*;
+use crate::crypto::*;
+use crate::events::*;
+use crate::messages::*;
+use crate::params::*;
 
 #[derive(Debug, Clone)]
 pub enum Event {
@@ -35,8 +38,6 @@ pub struct Process {
     /// Callback to get the value to be proposed for agreement.
     get_value: fn() -> String,
 }
-
-
 
 /// Consensus operates in terms of epochs, which contain an unlimited number of rounds.
 #[derive(Debug, Clone)]

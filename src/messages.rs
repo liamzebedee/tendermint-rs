@@ -1,5 +1,5 @@
-use crate::crypto::{verify_signature, Keypair, PublicKey, Signature};
 use serde::{Deserialize, Serialize};
+use crate::crypto::{verify_signature, Keypair, PublicKey, Signature};
 
 // Define message types
 #[derive(Debug, Clone, Serialize, Deserialize)]

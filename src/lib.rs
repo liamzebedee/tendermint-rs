@@ -11,11 +11,9 @@ pub mod protos;
 pub mod proposer_choice;
 pub mod rpc_client;
 pub mod rpc_server;
-pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crypto::verify_signature;
 
     #[test]
