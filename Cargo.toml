@@ -9,11 +9,6 @@ edition = "2021"
 name = "tendermint"
 path = "src/lib.rs"
 
-[[bin]]
-name = "tendermint"
-path = "src/cli/tendermint.rs"
-doc = false
-
 [dependencies]
 tokio = { version = "1", features = ["full", "sync"] }
 prost = "0.12"
