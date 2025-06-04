@@ -15,25 +15,22 @@ types
             wraps the message as an inner type
         new_signed(keypair, data) -> signed message
 
+        get_type -> enum{Precommit, Prevote}
+
         sig_envelope
             all fields in proto message
-        
-        get_type -> enum{Precommit, Prevote}
+
         verify_sig
+
         verify(clock)
             validates with an abstract clock which validates the time is recent (within idk 30s)
+            verifies the sig
 
     transaction
         from_message
             wraps the message as an inner type
         new_signed(keypair, data) -> signed message
         .hash function which computes the sha256 hash
-        .verify_sig function which validates the signature is correct for the sender
-        sig_envelope
-            all fields in proto message
-    
-    vote
-        new()
         .verify_sig function which validates the signature is correct for the sender
         sig_envelope
             all fields in proto message
@@ -111,54 +108,3 @@ test
             0.0.0.0:port % i
             pubkey
             leveldb database name -> use purely in-memory version for tests
-
-
-user api
-    use TendermintValidator
-
-for the master implementation
-    state machine
-
-    what are the operations?
-    read
-    write
-
-for bigtable master
-    tablet allocation and reallocation
-
-it'd be useful to write our logic in rust
-use rust datatypes
-load data from a virtual file system
-
-and it'd be useful to use like
-riscv
-so
-compile your rust program to riscv
-it has an entrypoint
-which is a grpc server
-
-imagine 
-it runs a riscv interpreter
-which runs a server
-each transaction invokes a method on the grpc server
-with the protobuf input
-there is an inbox/outbox
-which allows the chain to send messages to the external world
-and process them on the next tick
-inbox = mempool
-outbox = events
-in ethereum's model
-but they aren't unicast
-and they require gas
-
-
-what do you need for bigtable?
-tablet splitting etc
-in memory btree thing
-in memory cache
-
-it's just a simple
-
-
-External state (Get/Put/Delete results): deterministic
-Internal state (on-disk files, performance, ordering of keys within SSTables): nondeterministic
