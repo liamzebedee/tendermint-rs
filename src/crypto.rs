@@ -98,6 +98,16 @@ impl FromStr for PublicKey {
     }
 }
 
+// FromStr.
+impl FromStr for Signature {
+    type Err = secp256k1::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let signature = secp256k1::ecdsa::Signature::from_der(s.as_bytes())?;
+        Ok(Signature(signature.serialize_der()))
+    }
+}
+
 // Serialize.
 impl Serialize for PublicKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -120,16 +130,6 @@ impl<'de> Deserialize<'de> for Signature {
         let b = hex::decode(s).map_err(serde::de::Error::custom)?;
         let signature =
             secp256k1::ecdsa::Signature::from_der(&b).map_err(serde::de::Error::custom)?;
-        Ok(Signature(signature.serialize_der()))
-    }
-}
-
-// FromStr.
-impl FromStr for Signature {
-    type Err = secp256k1::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let signature = secp256k1::ecdsa::Signature::from_der(s.as_bytes())?;
         Ok(Signature(signature.serialize_der()))
     }
 }
@@ -182,5 +182,16 @@ mod tests {
         // Verify generated keypair.
         assert!(keypair2.get_secret_key().display_secret().to_string() == keypair.get_secret_key().display_secret().to_string());
         assert!(keypair2.get_public_key().to_string() == keypair.get_public_key().to_string());
+    }
+
+    #[test]
+    fn test_create_sign() {
+        let keypair = crypto::ECDSAKeypair::new();
+        let data = b"gm tendermint";
+
+        let signature = keypair.sign(data);
+        assert!(verify_signature(data, &signature.to_inner(), keypair.get_public_key()));
+
+        println!("Signature verified successfully!");
     }
 }
