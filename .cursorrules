@@ -1,1 +1,0 @@
-Write code with fully unqualified types. e.g. instead of `crate::crypto::verify_signature`, write `verify_signature` and `use` the crypto.

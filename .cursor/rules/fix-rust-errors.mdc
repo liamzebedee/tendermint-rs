@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: "Iteratively fix Rust compiler errors one at a time"
+globs: ["**/*.rs"]
+alwaysApply: false
+---
+
+When working with Rust files:
+
+- Run `cargo build` to compile the project.
+- If there are compiler errors, identify the first error reported.
+- Navigate to the source code location of the first error.
+- Apply the minimal change necessary to fix this error.
+- Do not make changes unrelated to the current error.
+- Save the file after applying the fix.
+- Re-run `cargo build` to check for remaining errors.
+- Repeat this process until `cargo build` completes successfully without errors.
