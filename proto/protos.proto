@@ -47,10 +47,11 @@ message GetLatestResponse {
 }
 
 message Block {
-    repeated Transaction txs = 1;
-    bytes proposer = 2;
-    bytes previous_block_hash = 3;
-    int64 height = 4;
+    // Header.
+    bytes proposer = 1;
+    bytes previous_block_hash = 2;
+    // Body.
+    repeated Transaction txs = 3;
 }
 
 message TxGossip {

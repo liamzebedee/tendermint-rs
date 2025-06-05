@@ -36,14 +36,14 @@ pub struct GetLatestResponse {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Block {
-    #[prost(message, repeated, tag = "1")]
-    pub txs: ::prost::alloc::vec::Vec<Transaction>,
-    #[prost(bytes = "vec", tag = "2")]
+    /// Header.
+    #[prost(bytes = "vec", tag = "1")]
     pub proposer: ::prost::alloc::vec::Vec<u8>,
-    #[prost(bytes = "vec", tag = "3")]
+    #[prost(bytes = "vec", tag = "2")]
     pub previous_block_hash: ::prost::alloc::vec::Vec<u8>,
-    #[prost(int64, tag = "4")]
-    pub height: i64,
+    /// Body.
+    #[prost(message, repeated, tag = "3")]
+    pub txs: ::prost::alloc::vec::Vec<Transaction>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
