@@ -18,9 +18,7 @@ pub struct GetHistoryQuery {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetHistoryResponse {
     #[prost(message, repeated, tag = "1")]
-    pub blocks: ::prost::alloc::vec::Vec<Block>,
-    #[prost(message, repeated, tag = "2")]
-    pub votes: ::prost::alloc::vec::Vec<VoteMessage>,
+    pub decisions: ::prost::alloc::vec::Vec<Decision>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -32,6 +30,14 @@ pub struct GetLatestResponse {
     pub votes: ::prost::alloc::vec::Vec<VoteMessage>,
     #[prost(int64, tag = "2")]
     pub local_time: i64,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Decision {
+    #[prost(message, optional, tag = "1")]
+    pub block: ::core::option::Option<Block>,
+    #[prost(message, repeated, tag = "2")]
+    pub votes: ::prost::alloc::vec::Vec<VoteMessage>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

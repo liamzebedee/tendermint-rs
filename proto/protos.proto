@@ -35,8 +35,7 @@ message GetHistoryQuery {
 }
 
 message GetHistoryResponse {
-    repeated Block blocks = 1;
-    repeated VoteMessage votes = 2;
+    repeated Decision decisions = 1;
 }
 
 message GetLatestQuery {}
@@ -44,6 +43,11 @@ message GetLatestQuery {}
 message GetLatestResponse {
     repeated VoteMessage votes = 1;
     int64 localTime = 2;
+}
+
+message Decision {
+    Block block = 1;
+    repeated VoteMessage votes = 2;
 }
 
 message Block {

@@ -3,6 +3,7 @@ mod tests {
     use super::*;
     use crate::crypto::{Keypair, PublicKey};
     use crate::validator_node::ValidatorNode;
+    use crate::consensus_engine::*;
     use tokio::sync::mpsc;
     use std::sync::Arc;
 
@@ -76,16 +77,43 @@ mod tests {
         println!("Generated Network Config: {:?}", network_config);
 
         // 3. Create a validator node for config#0 and start it.
+        // 
+
+        // 1. Validator Service.
         let validator_node = ValidatorNode {};
         let addr = validators[0].address.clone(); // Use the address from the validator config
         let server_handle = tokio::spawn(async move {
             validator_node.run_service(addr).await.unwrap();
         });
 
+        // 2. Consensus engine.
+        let consensus_engine = ConsensusEngine{};
+
         // Wait for the server to start
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
 
         // You can add client code here to interact with the server
+
+        // need to make this a fixed timestamp thing ie.
+        // fixed block times
+            // since genesis
+            // 
+
+        // 1. copy-paste existing process + get it running for 5 validators proposing messages over grpc
+        // 1. edit so it has:
+            // - startup
+                // wait for connection to other validators
+                // once its ready, then sync
+                // sync will download decisions from one randomly chosen validator
+                    // maintain validator set history
+                    // if decisions > quorum, then ingest block. do not emit decision.
+            // live mode
+                // orient in round. need a sense of timing.
+                // get proposal
+                    // validate etc.
+                // ingest prevote
+                // ingest precommit
+        // 
 
         // Shutdown the server
         server_handle.abort();

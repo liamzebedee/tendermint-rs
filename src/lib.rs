@@ -11,3 +11,4 @@ pub mod types;
 pub mod store;
 pub mod validator_node;
 pub mod userspace;
+pub mod consensus_engine;

@@ -15,8 +15,7 @@ impl ValidatorService for ValidatorNode {
     async fn get_history(&self, request: Request<GetHistoryQuery>) -> Result<Response<GetHistoryResponse>, Status> {
         // Implement the get_history logic here
         let response = GetHistoryResponse {
-            blocks: vec![],
-            votes: vec![],
+            decisions: vec![],
         };
         Ok(Response::new(response))
     }
