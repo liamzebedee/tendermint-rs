@@ -10,34 +10,63 @@ types
     for each protocol buffers message
     we want to wrap it in our own datatype
 
-    vote
+    proposal
+        new(keypair, Block, round, height, clock) -> signed message
+
         from_message
             wraps the message as an inner type
-        new_signed(keypair, data) -> signed message
+            parses block
 
+        sig_envelope
+            all fields in proto message
+
+        sig_verify
+
+        validate(clock)
+            validates with an abstract clock which validates the time is recent (within idk 30s)
+            verifies the sig
+
+    vote
+        new(keypair, VoteMessage) -> signed message
+
+        from_message
+            wraps the message as an inner type
+        
         get_type -> enum{Precommit, Prevote}
 
         sig_envelope
             all fields in proto message
 
-        verify_sig
+        sig_verify
 
-        verify(clock)
+        validate(clock)
             validates with an abstract clock which validates the time is recent (within idk 30s)
             verifies the sig
 
     transaction
+        new(keypair, data) -> signed message
+
         from_message
             wraps the message as an inner type
-        new_signed(keypair, data) -> signed message
+        
         .hash function which computes the sha256 hash
-        .verify_sig function which validates the signature is correct for the sender
+        
+        sig_verify
+        
         sig_envelope
             all fields in proto message
+        
+        validate()
+            validate it works according to state machine??
     
-    block
-        .hash function which computes canonical hash for list of txs
-        stores block in store by hash for later pickup
+    Block
+        new(txs: Vec<Transaction>, proposer, prev_block_hash)
+        from_message
+
+        hash()
+            H(proposer, prevblockhash, txs)
+        
+        validate
 
 
 txs_to_proposal(txs, previous_block_hash, height, proposer_keypair, round) -> Block, ProposeMessage
@@ -45,7 +74,7 @@ txs_to_proposal(txs, previous_block_hash, height, proposer_keypair, round) -> Bl
     makes hash
     this is value for proposal
     signs proposal message
-    
+
 
 AbstractMonotonicClock
     used for local testing of timeouts etc.
@@ -108,3 +137,9 @@ test
             0.0.0.0:port % i
             pubkey
             leveldb database name -> use purely in-memory version for tests
+
+
+
+
+1. rewrite the types so it's in the form of wrappers
+2. add a backing store using leveldb
