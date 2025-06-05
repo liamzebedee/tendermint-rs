@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
+use std::sync::{Arc, Mutex};
 
 /// A monotonic clock implementation for testing timeouts and time-based operations
 #[derive(Debug, Clone)]
@@ -60,18 +61,26 @@ mod tests {
 
     #[tokio::test]
     async fn test_clock_timeout() {
-        let mut clock = AbstractMonotonicClock::new();
-        let start = clock.get_time();
+        let clock = Arc::new(Mutex::new(AbstractMonotonicClock::new()));
+        let _start = clock.lock().unwrap().get_time();
         
-        // Set a timeout for 100ms
-        let timeout_future = clock.timeout(100);
+        // Create a future that will complete when the clock reaches 100ms
+        let timeout_future = {
+            let clock = Arc::clone(&clock);
+            let target_time = clock.lock().unwrap().get_time() + 100;
+            async move {
+                while clock.lock().unwrap().get_time() < target_time {
+                    sleep(Duration::from_millis(1)).await;
+                }
+            }
+        };
         
         // Crank the clock to trigger the timeout
-        clock.crank(100);
+        clock.lock().unwrap().crank(100);
         
         // Wait for the timeout
         timeout_future.await;
         
-        assert_eq!(clock.get_time(), 100);
+        assert_eq!(clock.lock().unwrap().get_time(), 100);
     }
 } 

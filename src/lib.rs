@@ -8,4 +8,6 @@ pub mod params;
 pub mod protos;
 pub mod proposer_choice;
 pub mod types;
-
+pub mod store;
+pub mod validator_node;
+pub mod userspace;

@@ -61,8 +61,9 @@ impl ValidatorSet {
         }
 
         // Center priorities around zero
+        let avg_priority = self.average_priority();
         for priority in self.priorities.values_mut() {
-            *priority -= avg_priority as i64;
+            *priority = (*priority as f64 - avg_priority) as i64;
         }
 
         // Add voting power to priorities

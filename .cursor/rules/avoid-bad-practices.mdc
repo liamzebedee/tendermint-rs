@@ -13,3 +13,4 @@ When writing Rust:
 
 - Write code with fully unqualified types. e.g. instead of `crate::crypto::verify_signature`, write `verify_signature` and `use` the crypto.
 - Prefer being explicit for field definitions. Never use `..Default::default()`, always fill out the missing/empty fields with their defaults explicitly.
+- Prefer functions over structs with implementations.

@@ -1,6 +1,10 @@
 use crate::crypto::Keypair;
 use crate::protos::{ProposeMessage, MessageType};
 use chrono::{DateTime, Utc};
+use sha3::{Keccak256, Digest};
+use crate::crypto::{verify_signature, Signature, PublicKey};
+use secp256k1::ecdsa::SerializedSignature;
+use std::str::FromStr;
 
 pub struct Proposal {
     inner: ProposeMessage,
@@ -14,7 +18,7 @@ impl Proposal {
             height,
             value: Some(block),
             sig: Vec::new(),
-            sender: Vec::new(),
+            sender: keypair.get_public_key().to_string().as_bytes().to_vec(),
             timestamp: timestamp.timestamp(),
         };
         let sig_envelope = Self::sig_envelope(&proposal);
@@ -31,12 +35,27 @@ impl Proposal {
         })
     }
 
-    pub fn sig_envelope(_msg: &ProposeMessage) -> Vec<u8> {
-        Vec::new()
+    pub fn sig_envelope(msg: &ProposeMessage) -> Vec<u8> {
+        let mut hasher = Keccak256::new();
+        hasher.update(&msg.msg_type.to_le_bytes());
+        hasher.update(&msg.round.to_le_bytes());
+        hasher.update(&msg.height.to_le_bytes());
+        if let Some(ref block) = msg.value {
+            let block_hash = crate::types::Block::from_message(block.clone()).unwrap().hash();
+            hasher.update(&block_hash);
+        }
+        hasher.update(&msg.sender);
+        hasher.update(&msg.timestamp.to_le_bytes());
+        hasher.finalize().to_vec()
     }
 
     pub fn sig_verify(&self) -> bool {
-        false
+        let sig_envelope = Self::sig_envelope(&self.inner);
+        let signature_string = String::from_utf8(self.inner.sig.clone()).unwrap();
+        let signature = Signature::from_str(&signature_string).unwrap();
+        let public_key_string = String::from_utf8(self.inner.sender.clone()).unwrap();
+        let public_key = PublicKey::from_str(&public_key_string).unwrap();
+        verify_signature(&sig_envelope, &signature.to_inner(), public_key)
     }
 
     pub fn validate(&self, clock: &impl Clock) -> bool {
