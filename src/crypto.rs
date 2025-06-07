@@ -177,8 +177,8 @@ mod tests {
 
     #[test]
     fn test_parse_keypair() {
-        let keypair = ECDSAKeypair::new();
-        let keypair2 = ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string(),);
+        let keypair = crate::crypto::ECDSAKeypair::new();
+        let keypair2 = crate::crypto::ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string(),);
         // Verify generated keypair.
         assert!(keypair2.get_secret_key().display_secret().to_string() == keypair.get_secret_key().display_secret().to_string());
         assert!(keypair2.get_public_key().to_string() == keypair.get_public_key().to_string());
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn test_create_sign() {
-        let keypair = crypto::ECDSAKeypair::new();
+        let keypair = crate::crypto::ECDSAKeypair::new();
         let data = b"gm tendermint";
 
         let signature = keypair.sign(data);

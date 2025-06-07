@@ -9,10 +9,10 @@ pub struct HelloMessage {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetHistoryQuery {
-    #[prost(int64, tag = "1")]
-    pub start_height: i64,
-    #[prost(int64, tag = "2")]
-    pub end_height: i64,
+    #[prost(uint64, tag = "1")]
+    pub start_height: u64,
+    #[prost(uint64, tag = "2")]
+    pub end_height: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -28,8 +28,8 @@ pub struct GetLatestQuery {}
 pub struct GetLatestResponse {
     #[prost(message, repeated, tag = "1")]
     pub votes: ::prost::alloc::vec::Vec<VoteMessage>,
-    #[prost(int64, tag = "2")]
-    pub local_time: i64,
+    #[prost(uint64, tag = "2")]
+    pub local_time: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -47,8 +47,10 @@ pub struct Block {
     pub proposer: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes = "vec", tag = "2")]
     pub previous_block_hash: ::prost::alloc::vec::Vec<u8>,
+    #[prost(uint64, tag = "3")]
+    pub height: u64,
     /// Body.
-    #[prost(message, repeated, tag = "3")]
+    #[prost(message, repeated, tag = "4")]
     pub txs: ::prost::alloc::vec::Vec<Transaction>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -66,8 +68,8 @@ pub struct Transaction {
     pub sig: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes = "vec", tag = "3")]
     pub sender: ::prost::alloc::vec::Vec<u8>,
-    #[prost(int64, tag = "4")]
-    pub timestamp: i64,
+    #[prost(uint64, tag = "4")]
+    pub timestamp: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -75,18 +77,18 @@ pub struct ProposeMessage {
     /// set as PROPOSE
     #[prost(enumeration = "MessageType", tag = "1")]
     pub msg_type: i32,
-    #[prost(int64, tag = "2")]
-    pub round: i64,
-    #[prost(int64, tag = "3")]
-    pub height: i64,
+    #[prost(uint64, tag = "2")]
+    pub round: u64,
+    #[prost(uint64, tag = "3")]
+    pub height: u64,
     #[prost(message, optional, tag = "4")]
     pub value: ::core::option::Option<Block>,
     #[prost(bytes = "vec", tag = "5")]
     pub sig: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes = "vec", tag = "6")]
     pub sender: ::prost::alloc::vec::Vec<u8>,
-    #[prost(int64, tag = "7")]
-    pub timestamp: i64,
+    #[prost(uint64, tag = "7")]
+    pub timestamp: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -94,18 +96,18 @@ pub struct VoteMessage {
     /// set as PREVOTE or PRECOMMIT
     #[prost(enumeration = "MessageType", tag = "1")]
     pub msg_type: i32,
-    #[prost(int64, tag = "2")]
-    pub round: i64,
-    #[prost(int64, tag = "3")]
-    pub height: i64,
+    #[prost(uint64, tag = "2")]
+    pub round: u64,
+    #[prost(uint64, tag = "3")]
+    pub height: u64,
     #[prost(bytes = "vec", tag = "4")]
     pub value: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes = "vec", tag = "5")]
     pub sig: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes = "vec", tag = "6")]
     pub sender: ::prost::alloc::vec::Vec<u8>,
-    #[prost(int64, tag = "7")]
-    pub timestamp: i64,
+    #[prost(uint64, tag = "7")]
+    pub timestamp: u64,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]

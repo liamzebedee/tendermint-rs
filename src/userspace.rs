@@ -4,31 +4,9 @@ mod tests {
     use crate::crypto::{Keypair, PublicKey};
     use crate::validator_node::ValidatorNode;
     use crate::consensus_engine::*;
+    use crate::config::*;
     use tokio::sync::mpsc;
     use std::sync::Arc;
-
-    #[derive(Debug)]
-    struct ValidatorConfig {
-        public_key: PublicKey,
-        address: String, // ip:port
-    }
-
-    #[derive(Debug)]
-    struct ValidatorSetEntry {
-        public_key: PublicKey,
-        address: String,
-    }
-
-    #[derive(Debug)]
-    struct ValidatorSetLog {
-        from_height: u64,
-        validators: Vec<ValidatorSetEntry>,
-    }
-
-    #[derive(Debug)]
-    struct ConsensusConfig {
-        validator_set_logs: Vec<ValidatorSetLog>
-    }
 
     fn generate_validator_config(num_validators: usize) -> Vec<ValidatorConfig> {
         let mut validators = Vec::new();
@@ -51,7 +29,7 @@ mod tests {
         validators
     }
 
-    fn generate_network_config(validators: &Vec<ValidatorConfig>) -> ConsensusConfig {
+    fn generate_network_config(genesis_start_time: u64, validators: &Vec<ValidatorConfig>) -> ConsensusConfig {
         let validator_set_logs = validators.iter().map(|validator| {
             ValidatorSetLog {
                 from_height: 0,
@@ -63,6 +41,7 @@ mod tests {
         }).collect();
 
         ConsensusConfig {
+            genesis_start_time,
             validator_set_logs: validator_set_logs
         }
     }
@@ -73,7 +52,10 @@ mod tests {
         let validators = generate_validator_config(5);
         
         // 2. Generate validator config for the network.
-        let network_config = generate_network_config(&validators);
+        let network_config = generate_network_config(
+            chrono::Utc::now().timestamp() as u64,
+            &validators
+        );
         println!("Generated Network Config: {:?}", network_config);
 
         // 3. Create a validator node for config#0 and start it.
@@ -87,7 +69,12 @@ mod tests {
         });
 
         // 2. Consensus engine.
-        let consensus_engine = ConsensusEngine{};
+        // Create mock/default arguments for ConsensusEngine
+        let validator_keypair = Keypair::new();
+        let consensus_engine = ConsensusEngine::new(
+            network_config,
+            validator_keypair
+        );
 
         // Wait for the server to start
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
@@ -96,9 +83,13 @@ mod tests {
 
         // ideas:
         // - solution for "clock drift" on tendermint node reconnect
+            // liveness messages
+            // ask other peers for their clock, take median
         // - fixed block time modification
+            // start block - starts at time t
+            // timeouts are fixed and static
+            // add up timeouts - (propsal, prevote, precommit) = 1 timestep
         // - leader-based system. ie. elect whenever a new master lease. and then master holds lease for predefined period.
-
 
         // 1. copy-paste existing process + get it running for 5 validators proposing messages over grpc
         // 1. edit so it has:
@@ -110,7 +101,7 @@ mod tests {
                     // if decisions > quorum, then ingest block. do not emit decision.
             // live mode
                 // orient in round. need a sense of timing.
-                    // wait until you receive proposal message
+                    // wait until you receive precommit message
                     // then calculate the next step as:
                         // proposal.timestamp + TIMEOUT
                 // get proposal

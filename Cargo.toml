@@ -35,7 +35,9 @@ chrono = "0.4"
 futures = "0.3"
 rocksdb = "0.21.0"
 bincode = "2.0.1"
-proc-macro2 = "1.0.95"
+proc-macro2 = "1.0.79"
+diesel = { version = "2.1.0", features = ["sqlite", "r2d2", "chrono"] }
+libsqlite3-sys = "0.26.0"
 
 [build-dependencies]
 tonic-build = "0.11"

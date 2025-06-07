@@ -1,11 +1,12 @@
 use crate::types::{Transaction, Vote};
 
-mod rocks;
+mod sqlite;
 pub use rocks::RocksStore;
+pub use sqlite::SqliteStore;
 
-const PREFIX_TRANSACTION: str = "transaction:";
-const PREFIX_PREVOTE: str = "prevote:";
-const PREFIX_PRECOMMIT: str = "precommit:";
+const PREFIX_TRANSACTION: &str = "transaction:";
+const PREFIX_PREVOTE: &str = "prevote:";
+const PREFIX_PRECOMMIT: &str = "precommit:";
 
 fn key_for_transaction(tx: Transaction) -> Vec<u8> {
     let mut key = PREFIX_TRANSACTION.as_bytes().to_vec();

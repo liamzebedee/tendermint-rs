@@ -8,10 +8,11 @@ pub struct Block {
 }
 
 impl Block {
-    pub fn new(transactions: Vec<Transaction>, proposer: Vec<u8>, prev_block_hash: Vec<u8>) -> Self {
+    pub fn new(transactions: Vec<Transaction>, proposer: Vec<u8>, prev_block_hash: Vec<u8>, prev_block_height: u64) -> Self {
         let block = ProtoBlock {
             proposer,
             previous_block_hash: prev_block_hash,
+            height: prev_block_height + 1,
             txs: Vec::new(),
         };
 
