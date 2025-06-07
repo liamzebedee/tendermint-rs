@@ -94,10 +94,11 @@ mod tests {
 
         // You can add client code here to interact with the server
 
-        // need to make this a fixed timestamp thing ie.
-        // fixed block times
-            // since genesis
-            // 
+        // ideas:
+        // - solution for "clock drift" on tendermint node reconnect
+        // - fixed block time modification
+        // - leader-based system. ie. elect whenever a new master lease. and then master holds lease for predefined period.
+
 
         // 1. copy-paste existing process + get it running for 5 validators proposing messages over grpc
         // 1. edit so it has:
@@ -109,6 +110,9 @@ mod tests {
                     // if decisions > quorum, then ingest block. do not emit decision.
             // live mode
                 // orient in round. need a sense of timing.
+                    // wait until you receive proposal message
+                    // then calculate the next step as:
+                        // proposal.timestamp + TIMEOUT
                 // get proposal
                     // validate etc.
                 // ingest prevote

@@ -14,7 +14,7 @@ pub enum VoteType {
 }
 
 pub struct Vote {
-    inner: VoteMessage,
+    pub inner: VoteMessage,
 }
 
 impl Vote {

@@ -1,5 +1,9 @@
 use std::collections::HashMap;
 
+// trait ProposerSelection {
+//     fn select_next_proposer(height: u64, round: u64) -> Validator;
+// }
+
 /// Represents a validator in the validator set
 #[derive(Debug, Clone)]
 pub struct Validator {

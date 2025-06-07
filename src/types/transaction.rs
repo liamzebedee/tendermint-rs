@@ -59,4 +59,4 @@ impl Transaction {
         // This should validate the transaction according to the state machine rules
         true
     }
-} 
+}
