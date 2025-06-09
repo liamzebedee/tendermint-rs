@@ -139,7 +139,3 @@ test
             leveldb database name -> use purely in-memory version for tests
 
 
-
-
-1. rewrite the types so it's in the form of wrappers
-2. add a backing store using leveldb

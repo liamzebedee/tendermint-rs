@@ -2,9 +2,11 @@ use crate::protos::Block as ProtoBlock;
 use crate::types::Transaction;
 use sha3::{Sha3_256, Digest};
 
+// TODO: fix transactions so no repetition here.
+
 pub struct Block {
-    inner: ProtoBlock,
-    transactions: Vec<Transaction>,
+    pub inner: ProtoBlock,
+    pub transactions: Vec<Transaction>,
 }
 
 impl Block {
@@ -22,12 +24,12 @@ impl Block {
         }
     }
 
-    pub fn from_message(msg: ProtoBlock) -> Result<Self, String> {
+    pub fn from_message(msg: ProtoBlock) -> Self {
         let transactions = msg.txs.iter().cloned().map(Transaction::from_message).collect();
-        Ok(Self {
+        Self {
             inner: msg,
             transactions,
-        })
+        }
     }
 
     pub fn hash(&self) -> Vec<u8> {

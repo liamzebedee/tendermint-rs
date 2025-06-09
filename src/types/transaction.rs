@@ -15,7 +15,7 @@ impl Transaction {
             data,
             sig: Vec::new(),
             sender: keypair.get_public_key().to_string().as_bytes().to_vec(),
-            timestamp: chrono::Utc::now().timestamp(),
+            timestamp: chrono::Utc::now().timestamp() as u64,
         };
 
         // Sign the transaction

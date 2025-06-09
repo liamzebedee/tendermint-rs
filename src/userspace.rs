@@ -108,6 +108,13 @@ mod tests {
                     // validate etc.
                 // ingest prevote
                 // ingest precommit
+        
+        // 
+
+        // so what do then?
+        // gfs master
+        // maintain file index
+        // kinda like a smart contract
         // 
 
         // Shutdown the server

@@ -1,11 +1,11 @@
 use tokio::time::Duration;
 use std::collections::HashMap;
-use crate::params::QUORUM;
+use crate::{config::ValidatorSetEntry, params::QUORUM};
 
 
 /// Gets the proposer for a round.
-pub fn get_proposer_for_round(round: u8, proposer_sequence: &[usize]) -> usize {
-    proposer_sequence[(round - 1) as usize % proposer_sequence.len()]
+pub fn get_proposer_for_round(round: u64, proposer_sequence: Vec<ValidatorSetEntry>) -> ValidatorSetEntry {
+    proposer_sequence[0].clone() // TODO
     /*
 
         // Tendermint/CometBFT consensus WIP.

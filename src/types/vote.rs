@@ -18,7 +18,7 @@ pub struct Vote {
 }
 
 impl Vote {
-    pub fn new(keypair: &Keypair, vote_type: VoteType, height: i64, round: i64, value: Vec<u8>, timestamp: DateTime<Utc>) -> Self {
+    pub fn new(keypair: &Keypair, vote_type: VoteType, height: u64, round: u64, value: Vec<u8>, timestamp: u64) -> Self {
         let msg_type = match vote_type {
             VoteType::Prevote => MessageType::Prevote,
             VoteType::Precommit => MessageType::Precommit,
@@ -30,7 +30,7 @@ impl Vote {
             value,
             sig: Vec::new(),
             sender: keypair.get_public_key().to_string().as_bytes().to_vec(),
-            timestamp: timestamp.timestamp(),
+            timestamp: timestamp,
         };
         let sig_envelope = Self::sig_envelope(&vote);
         let signature = keypair.sign(&sig_envelope);

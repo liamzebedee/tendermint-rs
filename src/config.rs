@@ -39,7 +39,7 @@ pub struct ValidatorConfig {
     pub address: String, // ip:port
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ValidatorSetEntry {
     pub public_key: PublicKey,
     pub address: String,

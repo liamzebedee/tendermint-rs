@@ -1,17 +1,19 @@
 use crate::crypto::Keypair;
 use crate::protos::{ProposeMessage, MessageType};
+use crate::protos::Block;
 use chrono::{DateTime, Utc};
 use sha3::{Keccak256, Digest};
 use crate::crypto::{verify_signature, Signature, PublicKey};
 use secp256k1::ecdsa::SerializedSignature;
 use std::str::FromStr;
 
+#[derive(Clone, Debug)]
 pub struct Proposal {
-    inner: ProposeMessage,
+    pub inner: ProposeMessage,
 }
 
 impl Proposal {
-    pub fn new(keypair: &Keypair, block: crate::protos::Block, round: i64, height: i64, timestamp: DateTime<Utc>) -> Self {
+    pub fn new(keypair: &Keypair, block: Block, round: u64, height: u64, timestamp: u64) -> Self {
         let mut proposal = ProposeMessage {
             msg_type: MessageType::Propose as i32,
             round,
@@ -19,7 +21,7 @@ impl Proposal {
             value: Some(block),
             sig: Vec::new(),
             sender: keypair.get_public_key().to_string().as_bytes().to_vec(),
-            timestamp: timestamp.timestamp(),
+            timestamp: timestamp,
         };
         let sig_envelope = Self::sig_envelope(&proposal);
         let signature = keypair.sign(&sig_envelope);
@@ -29,10 +31,10 @@ impl Proposal {
         }
     }
 
-    pub fn from_message(msg: ProposeMessage) -> Result<Self, String> {
-        Ok(Self {
+    pub fn from_message(msg: ProposeMessage) -> Self {
+        Self {
             inner: msg,
-        })
+        }
     }
 
     pub fn sig_envelope(msg: &ProposeMessage) -> Vec<u8> {
@@ -67,5 +69,5 @@ impl Proposal {
 }
 
 pub trait Clock {
-    fn is_recent(&self, timestamp: i64) -> bool;
+    fn is_recent(&self, timestamp: u64) -> bool;
 } 

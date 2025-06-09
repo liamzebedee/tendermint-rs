@@ -8,6 +8,10 @@ use std::{
     str::FromStr,
 };
 
+pub fn timestamp() -> u64 {
+    chrono::Utc::now().timestamp_millis() as u64
+}
+
 #[derive(Clone, Debug, Copy)]
 pub struct Signature(secp256k1::ecdsa::SerializedSignature);
 
@@ -116,6 +120,19 @@ impl Serialize for PublicKey {
     {
         let public_key_str = self.0.to_string();
         serializer.serialize_str(&public_key_str)
+    }
+}
+
+impl PublicKey {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.serialize().to_vec()
+    }
+}
+
+impl PublicKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, secp256k1::Error> {
+        let public_key = secp256k1::PublicKey::from_slice(bytes)?;
+        Ok(PublicKey(public_key))
     }
 }
 

@@ -1,7 +1,6 @@
 use crate::types::{Transaction, Vote};
 
 mod sqlite;
-pub use rocks::RocksStore;
 pub use sqlite::SqliteStore;
 
 const PREFIX_TRANSACTION: &str = "transaction:";
