@@ -1,9 +1,7 @@
-pub mod cmd;
-mod utils;
-
-use crate::utils::{CmdAsync, CmdSync};
 use clap::{Parser, Subcommand};
-use cmd::{accounts::AccountsArgs, network::NetworkArgs, node::NodeArgs};
+use tendermint::cli::cmd::{accounts::AccountsArgs, network::NetworkArgs, node::NodeArgs};
+use tendermint::cli::utils::{CmdAsync, CmdSync};
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Parser)]
 #[clap(name = "tendermint")]

@@ -1,8 +1,14 @@
-use crate::utils::CmdAsync;
 use clap::Parser;
 use serde_json::Result;
-use std::{net::IpAddr, path::PathBuf};
-use tendermint::config::{parse_config, AccountConfig, ValidatorInfo};
+use std::{net::IpAddr, path::PathBuf, time::{SystemTime, UNIX_EPOCH}};
+use tokio_stream::StreamExt;
+use crate::cli::utils::CmdAsync;
+use crate::config::{parse_config, AccountConfig, ValidatorInfo};
+use crate::crypto::ECDSAKeypair;
+use crate::messages::SignedMessage;
+use crate::process::Process;
+use crate::rpc_server::Server;
+use std::sync::Arc;
 
 pub struct NodeOutput {}
 
@@ -40,13 +46,6 @@ impl CmdAsync for NodeArgs {
     }
 }
 
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use tendermint::{
-    crypto::ECDSAKeypair, messages::SignedMessage, process::Process, rpc_server::Server,
-};
-use tokio_stream::StreamExt;
-
 async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
     // Network configuration:
     // - peers: (pubkey,address)[]
@@ -61,7 +60,8 @@ async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
 
     let peer_senders = Vec::new();
 
-    let api_server = Server::<SignedMessage>::new(host, port);
+    let addr = std::net::SocketAddr::new(host, port);
+    let api_server = Server::new(addr);
     let receiver = api_server.get_receiver();
     tokio::spawn(async move {
         api_server.run().await;
@@ -75,8 +75,10 @@ async fn run_node(_validators: Vec<ValidatorInfo>, host: IpAddr, port: u16) {
 
     // Define proposer sequence (round-robin)
     let proposer_sequence: Vec<usize> = (0..4).collect();
+    let (signed_sender, signed_receiver) = tokio::sync::mpsc::channel(100);
+    let signed_receiver = std::sync::Arc::new(tokio::sync::Mutex::new(signed_receiver));
     let mut process =
-        Process::new(0, keypair, receiver, peer_senders, proposer_sequence.clone(), get_value);
+        Process::new(0, keypair, signed_receiver, peer_senders, proposer_sequence.clone(), get_value);
 
     // Listen to events from node0.
     let mut subscriber1 = process.subscribe();

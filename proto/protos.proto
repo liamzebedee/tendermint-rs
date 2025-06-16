@@ -1,0 +1,97 @@
+syntax = "proto3";
+package protos;
+
+message Empty {}
+service ValidatorService {
+    // Sync: Get more than one block for resyncing fully.
+    rpc GetHistory(GetHistoryQuery) returns (GetHistoryResponse);
+    // Sync: Get the latest block for reconnecting to network.
+    rpc GetLatest(GetLatestQuery) returns (GetLatestResponse);
+
+    // Connect to another node.
+    rpc Hello(HelloMessage) returns (Empty);
+
+    // Gossip transactions to other nodes.
+    rpc GossipTxs(stream TxGossip) returns (stream TxGossip);
+
+    // Consensus: Propose.
+    rpc Propose(ProposeMessage) returns (Empty);
+    // Consensus: Prevote.
+    rpc Prevote(VoteMessage) returns (Empty);
+    // Consensus: Precommit.
+    rpc Precommit(VoteMessage) returns (Empty);
+}
+
+// HANDSHAKE.
+message HelloMessage {}
+
+// 
+// SYNC.
+// 
+
+message GetHistoryQuery {
+    uint64 start_height = 1;
+    uint64 end_height = 2;
+}
+
+message GetHistoryResponse {
+    repeated Decision decisions = 1;
+}
+
+message GetLatestQuery {}
+
+message GetLatestResponse {
+    repeated VoteMessage votes = 1;
+    uint64 localTime = 2;
+}
+
+message Decision {
+    Block block = 1;
+    repeated VoteMessage votes = 2;
+}
+
+message Block {
+    // Header.
+    bytes proposer = 1;
+    bytes previous_block_hash = 2;
+    uint64 height = 3;
+    // Body.
+    repeated Transaction txs = 4;
+}
+
+message TxGossip {
+    repeated Transaction txs = 1;
+}
+
+message Transaction {
+    bytes data = 1;
+    bytes sig = 2;
+    bytes sender = 3;
+    uint64 timestamp = 4;
+}
+
+enum MessageType {
+    PROPOSE = 0;
+    PREVOTE = 1;
+    PRECOMMIT = 2;
+}
+
+message ProposeMessage {
+    MessageType msgType = 1; // set as PROPOSE
+    uint64 round = 2;
+    uint64 height = 3;
+    Block value = 4;
+    bytes sig = 5;
+    bytes sender = 6;
+    uint64 timestamp = 7;
+}
+
+message VoteMessage {
+    MessageType msgType = 1; // set as PREVOTE or PRECOMMIT
+    uint64 round = 2;
+    uint64 height = 3;
+    bytes value = 4;
+    bytes sig = 5;
+    bytes sender = 6;
+    uint64 timestamp = 7;
+}

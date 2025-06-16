@@ -8,6 +8,10 @@ use std::{
     str::FromStr,
 };
 
+pub fn timestamp() -> u64 {
+    chrono::Utc::now().timestamp_millis() as u64
+}
+
 #[derive(Clone, Debug, Copy)]
 pub struct Signature(secp256k1::ecdsa::SerializedSignature);
 
@@ -98,6 +102,16 @@ impl FromStr for PublicKey {
     }
 }
 
+// FromStr.
+impl FromStr for Signature {
+    type Err = secp256k1::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let signature = secp256k1::ecdsa::Signature::from_der(s.as_bytes())?;
+        Ok(Signature(signature.serialize_der()))
+    }
+}
+
 // Serialize.
 impl Serialize for PublicKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -106,6 +120,19 @@ impl Serialize for PublicKey {
     {
         let public_key_str = self.0.to_string();
         serializer.serialize_str(&public_key_str)
+    }
+}
+
+impl PublicKey {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.serialize().to_vec()
+    }
+}
+
+impl PublicKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, secp256k1::Error> {
+        let public_key = secp256k1::PublicKey::from_slice(bytes)?;
+        Ok(PublicKey(public_key))
     }
 }
 
@@ -120,16 +147,6 @@ impl<'de> Deserialize<'de> for Signature {
         let b = hex::decode(s).map_err(serde::de::Error::custom)?;
         let signature =
             secp256k1::ecdsa::Signature::from_der(&b).map_err(serde::de::Error::custom)?;
-        Ok(Signature(signature.serialize_der()))
-    }
-}
-
-// FromStr.
-impl FromStr for Signature {
-    type Err = secp256k1::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let signature = secp256k1::ecdsa::Signature::from_der(s.as_bytes())?;
         Ok(Signature(signature.serialize_der()))
     }
 }
@@ -177,10 +194,21 @@ mod tests {
 
     #[test]
     fn test_parse_keypair() {
-        let keypair = ECDSAKeypair::new();
-        let keypair2 = ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string(),);
+        let keypair = crate::crypto::ECDSAKeypair::new();
+        let keypair2 = crate::crypto::ECDSAKeypair::new_from_privatekey(&keypair.get_secret_key().display_secret().to_string(),);
         // Verify generated keypair.
         assert!(keypair2.get_secret_key().display_secret().to_string() == keypair.get_secret_key().display_secret().to_string());
         assert!(keypair2.get_public_key().to_string() == keypair.get_public_key().to_string());
+    }
+
+    #[test]
+    fn test_create_sign() {
+        let keypair = crate::crypto::ECDSAKeypair::new();
+        let data = b"gm tendermint";
+
+        let signature = keypair.sign(data);
+        assert!(verify_signature(data, &signature.to_inner(), keypair.get_public_key()));
+
+        println!("Signature verified successfully!");
     }
 }

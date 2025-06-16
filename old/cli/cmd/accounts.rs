@@ -1,7 +1,8 @@
-use crate::utils::CmdSync;
+use crate::cli::utils::CmdSync;
 use clap::Parser;
 use serde_json::Result;
-use tendermint::{config::AccountConfig, crypto::ECDSAKeypair};
+use crate::config::AccountConfig;
+use crate::crypto::ECDSAKeypair;
 
 pub struct AccountsOutput {}
 

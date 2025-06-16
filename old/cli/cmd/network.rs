@@ -1,10 +1,8 @@
-use crate::utils::CmdSync;
+use crate::cli::utils::CmdSync;
 use clap::Parser;
 use serde_json::Result;
-use tendermint::{
-    config::{TendermintConfig, ValidatorInfo},
-    crypto::ECDSAKeypair,
-};
+use crate::config::{TendermintConfig, ValidatorInfo};
+use crate::crypto::ECDSAKeypair;
 
 pub struct NetworkOutput {}
 

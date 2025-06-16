@@ -3,8 +3,11 @@ use tokio::{
     sync::{mpsc, Mutex},
     time::{timeout, Duration},
 };
-
-use crate::{algos::*, crypto::*, events::*, messages::*, params::*};
+use crate::algos::*;
+use crate::crypto::*;
+use crate::events::*;
+use crate::messages::*;
+use crate::params::*;
 
 #[derive(Debug, Clone)]
 pub enum Event {
@@ -35,8 +38,6 @@ pub struct Process {
     /// Callback to get the value to be proposed for agreement.
     get_value: fn() -> String,
 }
-
-
 
 /// Consensus operates in terms of epochs, which contain an unlimited number of rounds.
 #[derive(Debug, Clone)]
@@ -211,7 +212,7 @@ impl Process {
         epoch.prevotes.insert(round, prevotes.clone());
 
         // Determine decision based on prevotes
-        let decision = Self::majority_decision(&prevotes);
+        let decision = majority_decision(&prevotes);
         // println!("Node {} decided on {:?}", self.id, decision);
         self.broadcast(Message::Precommit { round, value: decision.clone() }).await;
 
@@ -295,20 +296,8 @@ impl Process {
         }
     }
 
-    fn majority_decision(prevotes: &Vec<Option<String>>) -> Option<String> {
-        let mut counts = HashMap::new();
-        for vote in prevotes {
-            *counts.entry(vote.clone()).or_insert(0) += 1;
-        }
-        counts
-            .into_iter()
-            .max_by_key(|&(_, count)| count)
-            .filter(|&(_, count)| count >= QUORUM)
-            .map(|(value, _)| value)
-            .unwrap_or(None)
-    }
-
-    fn count_occurrences(precommits: &Vec<Option<String>>, decision: &Option<String>) -> usize {
-        precommits.iter().filter(|&v| v == decision).count()
+    fn count_occurrences(precommits: &Vec<Option<String>>, value: &Option<String>) -> usize {
+        precommits.iter().filter(|&v| v == value).count()
     }
 }
+
